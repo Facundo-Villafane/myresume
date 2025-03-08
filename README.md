@@ -23,7 +23,7 @@ Este proyecto es un panel de administración para gestionar un portafolio person
 
 1. **Clonar el repositorio**
    ```bash
-   git clone https://github.com/tu-usuario/tu-portafolio-admin.git
+   git clone https://github.com/Facundo-Villafane/myresume.git)
    cd tu-portafolio-admin
    ```
 
