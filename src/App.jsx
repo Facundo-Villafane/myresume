@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import AdminPanel from "./pages/AdminPanel";
 import Login from "./pages/Login";
 import PrivateRoute from "./components/PrivateRoute";
+import NotFound from './pages/NotFound';
 import './App.css';
 
 // Importar componentes para las secciones del admin
@@ -23,6 +24,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="*" element={<NotFound/>} />
       
       {/* Rutas de Administración */}
       <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>}>

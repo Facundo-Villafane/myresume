@@ -6,7 +6,8 @@ import ExperienceList from "../components/ExperienceList";
 import LanguagesList from "../components/LanguagesList";
 import ProjectsList from "../components/ProjectsList";
 import ToolsList from "../components/ToolsList";
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaGlobe, FaGithub, FaLinkedin, FaInstagram, FaXTwitter, FaItchIo } from "react-icons/fa";
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaGlobe, FaGithub, FaLinkedin, FaInstagram, FaItchIo } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
