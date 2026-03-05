@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import { db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import md5 from "md5";
+import { getGravatarUrl, openGravatarEditor, refreshGravatarUrl } from "../utils/gravatar";
+import { FaSync } from "react-icons/fa";
 
 const ProfileForm = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [useGravatar, setUseGravatar] = useState(true); // Por defecto, usar Gravatar
   const [profileData, setProfileData] = useState({
     fullName: "",
     title: "",
@@ -22,6 +26,7 @@ const ProfileForm = () => {
   });
   
   const [imageUrl, setImageUrl] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   // Cargar datos del perfil al iniciar
   useEffect(() => {
@@ -31,9 +36,16 @@ const ProfileForm = () => {
         const profileSnap = await getDoc(profileRef);
         
         if (profileSnap.exists()) {
-          setProfileData(profileSnap.data());
-          if (profileSnap.data().imageUrl) {
-            setImageUrl(profileSnap.data().imageUrl);
+          const data = profileSnap.data();
+          setProfileData(data);
+          
+          // Comprobar si se estaba usando Gravatar
+          if (data.useGravatar !== false) { // Si no está explícitamente en false, usar Gravatar
+            setUseGravatar(true);
+            setImageUrl(getGravatarUrl(data.email, 300));
+          } else if (data.imageUrl) {
+            setUseGravatar(false);
+            setImageUrl(data.imageUrl);
           }
         }
       } catch (error) {
@@ -46,6 +58,13 @@ const ProfileForm = () => {
     fetchProfileData();
   }, []);
 
+  // Actualizar URL de Gravatar cuando cambia el email
+  useEffect(() => {
+    if (useGravatar && profileData.email) {
+      setImageUrl(getGravatarUrl(profileData.email, 300));
+    }
+  }, [useGravatar, profileData.email]);
+
   // Manejar cambios en los campos
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,7 +76,50 @@ const ProfileForm = () => {
 
   // Manejar cambio de URL de imagen
   const handleImageUrlChange = (e) => {
-    setImageUrl(e.target.value);
+    if (!useGravatar) {
+      setImageUrl(e.target.value);
+    }
+  };
+
+  // Manejar cambio en la opción de usar Gravatar
+  const handleGravatarToggle = () => {
+    setUseGravatar(!useGravatar);
+    if (!useGravatar && profileData.email) {
+      // Si activamos Gravatar, generar la URL basada en el email
+      setImageUrl(getGravatarUrl(profileData.email, 300));
+    }
+  };
+
+  // Abrir la página de Gravatar
+  const handleOpenGravatar = () => {
+    if (!profileData.email) {
+      alert('Se necesita un correo electrónico para editar el perfil de Gravatar');
+      return;
+    }
+    
+    openGravatarEditor(profileData.email);
+  };
+
+  // Ver perfil actual de Gravatar
+  const viewCurrentGravatar = () => {
+    if (!profileData.email) return;
+    
+    const hash = md5(profileData.email.trim().toLowerCase());
+    window.open(`https://gravatar.com/${hash}`, '_blank');
+  };
+
+  // Refrescar la imagen de Gravatar (util después de actualizar)
+  const refreshGravatar = () => {
+    if (!profileData.email || !useGravatar) return;
+    
+    setRefreshing(true);
+    // Actualizar la URL con un timestamp para evitar caché
+    setImageUrl(refreshGravatarUrl(profileData.email, 300));
+    
+    // Simular un pequeño retraso para mostrar el spinner
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 500);
   };
 
   // Guardar datos del perfil
@@ -66,10 +128,11 @@ const ProfileForm = () => {
     setSaving(true);
     
     try {
-      // Incluir la URL de la imagen en los datos a guardar
+      // Incluir la URL de la imagen y el estado de Gravatar en los datos a guardar
       let updatedData = { 
         ...profileData,
-        imageUrl: imageUrl 
+        imageUrl: imageUrl,
+        useGravatar: useGravatar
       };
       
       // Guardar datos en Firestore
@@ -85,7 +148,12 @@ const ProfileForm = () => {
   };
 
   if (loading) {
-    return <p className="p-4">Cargando datos del perfil...</p>;
+    return (
+      <div className="flex justify-center items-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2">Cargando datos del perfil...</span>
+      </div>
+    );
   }
 
   return (
@@ -122,8 +190,8 @@ const ProfileForm = () => {
       {/* Imagen de perfil */}
       <div>
         <label className="block text-sm font-medium mb-1">Imagen de perfil</label>
-        <div className="flex items-start gap-4">
-          <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+        <div className="flex flex-col md:flex-row items-start gap-4">
+          <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 relative flex-shrink-0">
             {imageUrl ? (
               <img
                 src={imageUrl}
@@ -139,24 +207,78 @@ const ProfileForm = () => {
                 Sin imagen
               </div>
             )}
+            {useGravatar && profileData.email && (
+              <button
+                type="button"
+                onClick={refreshGravatar}
+                disabled={refreshing}
+                className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 shadow hover:bg-blue-600 transition-colors"
+                title="Refrescar imagen"
+              >
+                <FaSync className={refreshing ? "animate-spin" : ""} size={12} />
+              </button>
+            )}
           </div>
           
           <div className="flex-grow">
-            <input
-              type="url"
-              placeholder="URL de la imagen (https://...)"
-              value={imageUrl}
-              onChange={handleImageUrlChange}
-              className="border p-2 rounded w-full text-sm"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Ingresa la URL de una imagen cuadrada. Puedes usar servicios gratuitos como:
-            </p>
-            <ul className="text-xs text-gray-500 mt-1 list-disc list-inside">
-              <li><a href="https://imgbb.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500">ImgBB</a></li>
-              <li><a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" className="text-blue-500">PostImages</a></li>
-              <li><a href="https://imgur.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500">Imgur</a></li>
-            </ul>
+            {/* Opción para usar Gravatar */}
+            <div className="mb-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={useGravatar}
+                  onChange={handleGravatarToggle}
+                  className="mr-2"
+                />
+                <span className="text-sm font-medium">Usar Gravatar (basado en tu email)</span>
+              </label>
+              
+              {useGravatar && (
+                <div className="mt-2 space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleOpenGravatar}
+                    className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors"
+                  >
+                    Editar en Gravatar.com
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={viewCurrentGravatar}
+                    className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition-colors"
+                  >
+                    Ver mi perfil de Gravatar
+                  </button>
+                  
+                  <p className="text-xs text-gray-500">
+                    Al hacer clic, se abrirá el sitio de Gravatar donde podrás actualizar tu avatar.
+                    Después de actualizar, haz clic en el botón de refrescar para ver los cambios.
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {/* Campo de URL personalizada (deshabilitado si se usa Gravatar) */}
+            {!useGravatar && (
+              <>
+                <input
+                  type="url"
+                  placeholder="URL de la imagen (https://...)"
+                  value={imageUrl}
+                  onChange={handleImageUrlChange}
+                  className="border p-2 rounded w-full text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Ingresa la URL de una imagen cuadrada. Puedes usar servicios gratuitos como:
+                </p>
+                <ul className="text-xs text-gray-500 mt-1 list-disc list-inside">
+                  <li><a href="https://imgbb.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500">ImgBB</a></li>
+                  <li><a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" className="text-blue-500">PostImages</a></li>
+                  <li><a href="https://imgur.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500">Imgur</a></li>
+                </ul>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -200,6 +322,11 @@ const ProfileForm = () => {
               onChange={handleChange}
               className="border p-2 rounded w-full"
             />
+            {useGravatar && (
+              <p className="text-xs text-gray-500 mt-1">
+                Este email se usa para tu imagen de Gravatar.
+              </p>
+            )}
           </div>
           
           <div>
@@ -309,10 +436,17 @@ const ProfileForm = () => {
       
       <button 
         type="submit" 
-        className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors"
+        className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors flex items-center justify-center"
         disabled={saving}
       >
-        {saving ? "Guardando..." : "Guardar perfil"}
+        {saving ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            <span>Guardando...</span>
+          </>
+        ) : (
+          "Guardar perfil"
+        )}
       </button>
     </form>
   );

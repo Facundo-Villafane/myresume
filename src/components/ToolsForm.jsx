@@ -4,82 +4,82 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // Lista de herramientas comunes con sus iconos
 const availableTools = [
-  // Habilidades principales
-  { id: "webdesign", name: "Web Design", icon: "", category: "skill" },
-  { id: "mobiledesign", name: "Mobile Design", icon: "", category: "skill" },
-  { id: "uxdesign", name: "User Experience", icon: "", category: "skill" },
-  
+  // Hard Skills (Técnicas)
   // Diseño y Creatividad
-  { id: "photoshop", name: "Adobe Photoshop", icon: "SiAdobephotoshop", category: "design" },
-  { id: "illustrator", name: "Adobe Illustrator", icon: "SiAdobeillustrator", category: "design" },
-  { id: "xd", name: "Adobe XD", icon: "SiAdobexd", category: "design" },
-  { id: "aftereffects", name: "Adobe After Effects", icon: "SiAdobeaftereffects", category: "design" },
-  { id: "premierepro", name: "Adobe Premiere Pro", icon: "SiAdobepremierepro", category: "design" },
-  { id: "indesign", name: "Adobe InDesign", icon: "SiAdobeindesign", category: "design" },
-  { id: "lightroom", name: "Adobe Lightroom", icon: "SiAdobelightroom", category: "design" },
-  { id: "figma", name: "Figma", icon: "FaFigma", category: "design" },
-  { id: "sketch", name: "Sketch", icon: "SiSketch", category: "design" },
-  { id: "invision", name: "InVision", icon: "SiInvision", category: "design" },
-  { id: "blender", name: "Blender", icon: "SiBlender", category: "design" },
+  { id: "photoshop", name: "Adobe Photoshop", icon: "SiAdobephotoshop", category: "hard" },
+  { id: "illustrator", name: "Adobe Illustrator", icon: "SiAdobeillustrator", category: "hard" },
+  { id: "xd", name: "Adobe XD", icon: "SiAdobexd", category: "hard" },
+  { id: "aftereffects", name: "Adobe After Effects", icon: "SiAdobeaftereffects", category: "hard" },
+  { id: "premierepro", name: "Adobe Premiere Pro", icon: "SiAdobepremierepro", category: "hard" },
+  { id: "indesign", name: "Adobe InDesign", icon: "SiAdobeindesign", category: "hard" },
+  { id: "lightroom", name: "Adobe Lightroom", icon: "SiAdobelightroom", category: "hard" },
+  { id: "figma", name: "Figma", icon: "FaFigma", category: "hard" },
+  { id: "sketch", name: "Sketch", icon: "SiSketch", category: "hard" },
+  { id: "invision", name: "InVision", icon: "SiInvision", category: "hard" },
+  { id: "blender", name: "Blender", icon: "SiBlender", category: "hard" },
   
   // Desarrollo y Programación
-  { id: "vscode", name: "Visual Studio Code", icon: "DiVisualstudio", category: "development" },
-  { id: "visualstudio", name: "Visual Studio", icon: "BiLogoVisualStudio", category: "development" },
-  { id: "intellij", name: "IntelliJ IDEA", icon: "SiIntellijidea", category: "development" },
-  { id: "androidstudio", name: "Android Studio", icon: "SiAndroidstudio", category: "development" },
-  { id: "xcode", name: "Xcode", icon: "SiXcode", category: "development" },
-  { id: "github", name: "GitHub", icon: "FaGithub", category: "development" },
-  { id: "gitlab", name: "GitLab", icon: "FaGitlab", category: "development" },
-  { id: "bitbucket", name: "Bitbucket", icon: "FaBitbucket", category: "development" },
-  { id: "npm", name: "npm", icon: "FaNpm", category: "development" },
-  { id: "docker", name: "Docker", icon: "FaDocker", category: "development" },
-  { id: "html", name: "HTML", icon: "", category: "development" },
-  { id: "css", name: "CSS", icon: "", category: "development" },
-  { id: "reactjs", name: "React JS", icon: "", category: "development" },
-  { id: "nextjs", name: "Next JS", icon: "", category: "development" },
-  { id: "chakraui", name: "Chakra UI", icon: "", category: "development" },
-  { id: "emotion", name: "Emotion", icon: "", category: "development" },
-  { id: "framer", name: "Framer", icon: "", category: "development" },
+  { id: "vscode", name: "Visual Studio Code", icon: "DiVisualstudio", category: "hard" },
+  { id: "visualstudio", name: "Visual Studio", icon: "BiLogoVisualStudio", category: "hard" },
+  { id: "intellij", name: "IntelliJ IDEA", icon: "SiIntellijidea", category: "hard" },
+  { id: "androidstudio", name: "Android Studio", icon: "SiAndroidstudio", category: "hard" },
+  { id: "xcode", name: "Xcode", icon: "SiXcode", category: "hard" },
+  { id: "github", name: "GitHub", icon: "FaGithub", category: "hard" },
+  { id: "gitlab", name: "GitLab", icon: "FaGitlab", category: "hard" },
+  { id: "bitbucket", name: "Bitbucket", icon: "FaBitbucket", category: "hard" },
+  { id: "npm", name: "npm", icon: "FaNpm", category: "hard" },
+  { id: "docker", name: "Docker", icon: "FaDocker", category: "hard" },
+  { id: "html", name: "HTML", icon: "", category: "hard" },
+  { id: "css", name: "CSS", icon: "", category: "hard" },
+  { id: "reactjs", name: "React JS", icon: "", category: "hard" },
+  { id: "nextjs", name: "Next JS", icon: "", category: "hard" },
+  { id: "chakraui", name: "Chakra UI", icon: "", category: "hard" },
+  { id: "emotion", name: "Emotion", icon: "", category: "hard" },
+  { id: "framer", name: "Framer", icon: "", category: "hard" },
   
   // Lenguajes de Programación
-  { id: "cplusplus", name: "C++", icon: "SiCplusplus", category: "language" },
-  { id: "javascript", name: "JavaScript", icon: "FaJs", category: "language" },
-  { id: "typescript", name: "TypeScript", icon: "", category: "language" },
-  { id: "python", name: "Python", icon: "FaPython", category: "language" },
-  { id: "java", name: "Java", icon: "FaJava", category: "language" },
-  { id: "csharp", name: "C#", icon: "TbBrandCSharp", category: "language" },
+  { id: "cplusplus", name: "C++", icon: "SiCplusplus", category: "hard" },
+  { id: "javascript", name: "JavaScript", icon: "FaJs", category: "hard" },
+  { id: "typescript", name: "TypeScript", icon: "", category: "hard" },
+  { id: "python", name: "Python", icon: "FaPython", category: "hard" },
+  { id: "java", name: "Java", icon: "FaJava", category: "hard" },
+  { id: "csharp", name: "C#", icon: "TbBrandCSharp", category: "hard" },
   
   // Juegos
-  { id: "unity", name: "Unity", icon: "SiUnity", category: "game" },
-  { id: "unreal", name: "Unreal Engine", icon: "SiUnrealengine", category: "game" },
-  { id: "godot", name: "Godot", icon: "SiGodotengine", category: "game" },
-  { id: "construct3", name: "Construct 3", icon: "SiConstruct3", category: "game" },
+  { id: "unity", name: "Unity", icon: "SiUnity", category: "hard" },
+  { id: "unreal", name: "Unreal Engine", icon: "SiUnrealengine", category: "hard" },
+  { id: "godot", name: "Godot", icon: "SiGodotengine", category: "hard" },
+  { id: "construct3", name: "Construct 3", icon: "SiConstruct3", category: "hard" },
   
-  // Productividad
-  { id: "notion", name: "Notion", icon: "SiNotion", category: "productivity" },
-  { id: "slack", name: "Slack", icon: "FaSlack", category: "productivity" },
-  { id: "trello", name: "Trello", icon: "FaTrello", category: "productivity" },
-  { id: "asana", name: "Asana", icon: "SiAsana", category: "productivity" },
-  { id: "jira", name: "Jira", icon: "SiJira", category: "productivity" },
-  { id: "word", name: "Microsoft Word", icon: "RiFileWord2Line", category: "productivity" },
-  { id: "excel", name: "Microsoft Excel", icon: "RiFileExcel2Line", category: "productivity" },
+  // Soft Skills
+  { id: "wireframing", name: "Wireframing", icon: "", category: "soft" },
+  { id: "prototyping", name: "Prototyping", icon: "", category: "soft" },
+  { id: "testing", name: "Testing", icon: "", category: "soft" },
+  { id: "webdesign", name: "Web Design", icon: "", category: "soft" },
+  { id: "mobiledesign", name: "Mobile Design", icon: "", category: "soft" },
+  { id: "uxdesign", name: "User Experience", icon: "", category: "soft" },
+  { id: "communication", name: "Communication", icon: "", category: "soft" },
+  { id: "teamwork", name: "Teamwork", icon: "", category: "soft" },
+  { id: "leadership", name: "Leadership", icon: "", category: "soft" },
+  { id: "problemsolving", name: "Problem-solving", icon: "", category: "soft" },
+  { id: "creativity", name: "Creativity", icon: "", category: "soft" },
+  { id: "timemanagement", name: "Time Management", icon: "", category: "soft" },
   
-  // Metodologías
-  { id: "wireframing", name: "Wireframing", icon: "", category: "methodology" },
-  { id: "prototyping", name: "Prototyping", icon: "", category: "methodology" },
-  { id: "testing", name: "Testing", icon: "", category: "methodology" },
+  // Herramientas de productividad (se pueden considerar hard o soft según el uso)
+  { id: "notion", name: "Notion", icon: "SiNotion", category: "hard" },
+  { id: "slack", name: "Slack", icon: "FaSlack", category: "hard" },
+  { id: "trello", name: "Trello", icon: "FaTrello", category: "hard" },
+  { id: "asana", name: "Asana", icon: "SiAsana", category: "hard" },
+  { id: "jira", name: "Jira", icon: "SiJira", category: "hard" },
+  { id: "word", name: "Microsoft Word", icon: "RiFileWord2Line", category: "hard" },
+  { id: "excel", name: "Microsoft Excel", icon: "RiFileExcel2Line", category: "hard" },
 ];
 
-// Categorías disponibles
+// Categorías simplificadas
 const categories = [
   { id: "all", name: "Todas" },
-  { id: "skill", name: "Habilidades" },
-  { id: "design", name: "Diseño y Creatividad" },
-  { id: "development", name: "Desarrollo" },
-  { id: "language", name: "Lenguajes" },
-  { id: "methodology", name: "Metodologías" },
-  { id: "game", name: "Juegos" },
-  { id: "productivity", name: "Productividad" },
+  { id: "hard", name: "Hard Skills (Técnicas)" },
+  { id: "soft", name: "Soft Skills" },
 ];
 
 const ToolsForm = () => {
@@ -90,6 +90,7 @@ const ToolsForm = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [proficiency, setProficiency] = useState("intermediate"); // basic, intermediate, advanced, expert
   const [isLoading, setIsLoading] = useState(false);
+  const [customCategory, setCustomCategory] = useState("hard"); // Por defecto, nueva herramienta es "hard"
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -106,7 +107,7 @@ const ToolsForm = () => {
       const toolData = {
         nombre: selectedTool ? selectedTool.name : name,
         icono: selectedTool ? selectedTool.icon : customIcon,
-        categoria: selectedTool ? selectedTool.category : "other",
+        categoria: selectedTool ? selectedTool.category : customCategory,
         nivel: proficiency,
         createdAt: serverTimestamp(),
       };
@@ -118,6 +119,7 @@ const ToolsForm = () => {
       setSelectedTool(null);
       setCustomIcon("");
       setProficiency("intermediate");
+      setCustomCategory("hard");
       
       alert("Herramienta guardada correctamente");
     } catch (error) {
@@ -233,23 +235,20 @@ const ToolsForm = () => {
           <div>
             <select
               className="border p-2 rounded w-full"
-              value={selectedTool ? selectedTool.category : "other"}
+              value={selectedTool ? selectedTool.category : customCategory}
               onChange={(e) => {
                 if (selectedTool) {
                   setSelectedTool({...selectedTool, category: e.target.value});
+                } else {
+                  setCustomCategory(e.target.value);
                 }
               }}
-              disabled={Boolean(selectedTool)}
             >
-              <option value="other">Selecciona una categoría</option>
-              {categories.filter(c => c.id !== "all").map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
+              <option value="hard">Hard Skill (Técnica)</option>
+              <option value="soft">Soft Skill</option>
             </select>
             <p className="text-xs text-gray-500 mt-1">
-              Para herramientas personalizadas. No disponible al seleccionar una herramienta existente.
+              Selecciona si es una habilidad técnica (hard) o interpersonal (soft)
             </p>
           </div>
         </div>
@@ -294,7 +293,10 @@ const ToolsForm = () => {
           <div>
             <h3 className="font-medium">{selectedTool ? selectedTool.name : name}</h3>
             <p className="text-xs text-gray-500">
-              {selectedTool ? selectedTool.category : "personalizada"} • {
+              {selectedTool ? 
+                (selectedTool.category === "hard" ? "Hard Skill" : "Soft Skill") : 
+                (customCategory === "hard" ? "Hard Skill" : "Soft Skill")
+              } • {
                 proficiency === "basic" ? "Básico" :
                 proficiency === "intermediate" ? "Intermedio" :
                 proficiency === "advanced" ? "Avanzado" : "Experto"

@@ -1,18 +1,12 @@
 import React from "react";
 import DataManager from "./DataManager";
 
-// Gestor de Herramientas
+// Gestor de Herramientas simplificado
 const ToolsManager = () => {
-  // Categorías disponibles
+  // Categorías simplificadas
   const categories = [
-    { id: "design", name: "Diseño" },
-    { id: "development", name: "Desarrollo" },
-    { id: "language", name: "Lenguaje" },
-    { id: "game", name: "Juegos" },
-    { id: "productivity", name: "Productividad" },
-    { id: "methodology", name: "Metodología" },
-    { id: "skill", name: "Habilidad" },
-    { id: "other", name: "Otro" }
+    { id: "hard", name: "Hard Skill (Técnica)" },
+    { id: "soft", name: "Soft Skill" }
   ];
   
   // Niveles de competencia
@@ -25,8 +19,23 @@ const ToolsManager = () => {
 
   // Función para obtener el nombre de la categoría
   const getCategoryName = (categoryId) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : categoryId;
+    // Mapeo de categorías antiguas a nuevas
+    const categoryMap = {
+      "design": "hard",
+      "development": "hard",
+      "language": "hard",
+      "game": "hard",
+      "productivity": "hard",
+      "methodology": "soft",
+      "skill": "soft",
+      "other": "hard"
+    };
+    
+    // Si es una categoría antigua, convertirla
+    const normalizedCategory = categoryMap[categoryId] || categoryId;
+    
+    const category = categories.find(cat => cat.id === normalizedCategory);
+    return category ? category.name : (normalizedCategory === "hard" ? "Hard Skill" : "Soft Skill");
   };
 
   // Función para obtener el nombre del nivel
@@ -43,7 +52,7 @@ const ToolsManager = () => {
     },
     { 
       key: "categoria", 
-      label: "Categoría", 
+      label: "Tipo", 
       render: (value) => getCategoryName(value)
     },
     { 
@@ -66,6 +75,25 @@ const ToolsManager = () => {
   
   // Componente personalizado para editar herramientas
   const ToolEditForm = ({ data, onChange, onSave, onCancel }) => {
+    // Mapeo de categorías antiguas a nuevas para valores iniciales
+    const mapOldCategory = (oldCategory) => {
+      const categoryMap = {
+        "design": "hard",
+        "development": "hard",
+        "language": "hard",
+        "game": "hard",
+        "productivity": "hard",
+        "methodology": "soft",
+        "skill": "soft",
+        "other": "hard"
+      };
+      
+      return categoryMap[oldCategory] || oldCategory;
+    };
+    
+    // Normalizar la categoría para el formulario de edición
+    const initialCategoryValue = mapOldCategory(data.categoria || "hard");
+    
     return (
       <div className="space-y-4">
         <h3 className="font-medium text-lg">Editar herramienta</h3>
@@ -84,10 +112,10 @@ const ToolsManager = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Categoría:</label>
+            <label className="block text-sm font-medium mb-1">Tipo:</label>
             <select
               name="categoria"
-              value={data.categoria || 'other'}
+              value={initialCategoryValue}
               onChange={onChange}
               className="border p-2 rounded w-full"
             >
@@ -144,7 +172,7 @@ const ToolsManager = () => {
             <div>
               <p className="font-medium">{data.nombre || "Nombre de la herramienta"}</p>
               <p className="text-xs text-gray-500">
-                {getCategoryName(data.categoria || "other")} • {getLevelName(data.nivel || "intermediate")}
+                {getCategoryName(data.categoria || "hard")} • {getLevelName(data.nivel || "intermediate")}
               </p>
             </div>
           </div>

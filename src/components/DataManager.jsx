@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   collection, query, orderBy, doc, deleteDoc, updateDoc,
   getDocs, where
@@ -91,6 +91,7 @@ const DataManager = ({
   
   // Iniciar edición de un item
   const handleEdit = (item) => {
+    console.log("Editando item:", item);
     setEditingItem(item);
     setEditFormData({...item});
   };
@@ -304,10 +305,10 @@ const DataManager = ({
         </div>
       )}
       
-      {/* Modal de edición */}
+      {/* Modal de edición - Con estilos mejorados para asegurar visibilidad */}
       {editingItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4">
             {customEditForm ? (
               // Usar componente de edición personalizado si está definido
               React.cloneElement(customEditForm, {
@@ -363,13 +364,13 @@ const DataManager = ({
                     </td>
                   ))}
                   <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                    {/*<button
-                     onClick={() => handleEdit(item)}
-                     className="text-blue-600 hover:text-blue-900 mr-3"
-                     title="Editar"
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="text-blue-600 hover:text-blue-900 mr-3"
+                      title="Editar"
                     >
-                    <FaEdit />
-                    </button>*/}
+                      <FaEdit />
+                    </button>
                     <button
                       onClick={() => handleConfirmDelete(item)}
                       className="text-red-600 hover:text-red-900"
