@@ -3,15 +3,12 @@ import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { FaGoogle, FaLock } from "react-icons/fa";
-import adminConfig from "../../src/config/adminConfig";
-
 function Login() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // Obtener el UID del administrador desde el archivo de configuración
-  const { ADMIN_UID } = adminConfig;
+
+  const ADMIN_UID = import.meta.env.VITE_ADMIN_UID;
 
   // Verificar si el usuario ya está autenticado al cargar la página
   useEffect(() => {
