@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { db } from "../../firebaseConfig";
+import { db } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore";
 
 // Logos de instituciones educativas conocidas (respaldo inicial)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { db } from "../../firebaseConfig";
+import { db } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // Lista de tecnologías disponibles (se puede expandir según necesidades)

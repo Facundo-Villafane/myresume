@@ -1,6 +1,6 @@
 import { collection, query, orderBy } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
-import { db } from "../../firebaseConfig";
+import { db } from "../firebaseConfig";
 import React from "react";
 
 const mockProjects = [

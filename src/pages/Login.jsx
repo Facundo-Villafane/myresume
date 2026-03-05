@@ -1,4 +1,4 @@
-import { auth } from "../../firebaseConfig";
+import { auth } from "../firebaseConfig";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";

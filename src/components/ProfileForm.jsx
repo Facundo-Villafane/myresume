@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { db } from "../../firebaseConfig";
+import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import md5 from "md5";
 import { getGravatarUrl, openGravatarEditor, refreshGravatarUrl } from "../utils/gravatar";

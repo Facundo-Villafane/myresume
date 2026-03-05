@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { db } from "../../firebaseConfig";
+import { db } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // Lista de herramientas comunes con sus iconos

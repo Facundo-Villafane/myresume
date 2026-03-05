@@ -1,7 +1,7 @@
 import React from 'react';
 import { collection } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
-import { db } from "../../firebaseConfig";
+import { db } from "../firebaseConfig";
 
 const LanguagesList = () => {
   const q = collection(db, "idiomas");

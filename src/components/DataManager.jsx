@@ -3,7 +3,7 @@ import {
   collection, query, orderBy, doc, deleteDoc, updateDoc,
   getDocs, where
 } from "firebase/firestore";
-import { db } from "../../firebaseConfig";
+import { db } from "../firebaseConfig";
 import { FaEdit, FaTrash, FaCheck, FaTimes } from "react-icons/fa";
 
 // Este componente genérico maneja la edición y eliminación de cualquier colección

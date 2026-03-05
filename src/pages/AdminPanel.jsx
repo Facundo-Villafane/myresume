@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router";
 import { FaHome, FaBriefcase, FaGraduationCap, FaTools, FaLanguage, FaFolder, FaCog, FaSignOutAlt } from "react-icons/fa";
 import { signOut } from "firebase/auth";
-import { auth } from "../../firebaseConfig"; // Asegúrate de exportar auth desde tu firebaseConfig
+import { auth } from "../firebaseConfig";
 
 const AdminPanel = () => {
   const location = useLocation();

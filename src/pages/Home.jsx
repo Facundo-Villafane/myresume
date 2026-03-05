@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebaseConfig";
+import { db } from "../firebaseConfig";
 import EducationList from "../components/EducationList";
 import ExperienceList from "../components/ExperienceList";
 import LanguagesList from "../components/LanguagesList";
