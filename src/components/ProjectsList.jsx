@@ -34,7 +34,15 @@ const ProjectsList = () => {
   const projectsData = proyectos && proyectos.length > 0 ? proyectos : mockProjects;
 
   return (
-    <div className="flex flex-wrap gap-8 lg:gap-10 w-full justify-start">
+    <div
+      className="flex gap-8 lg:gap-10 w-full overflow-x-auto scrollbar-none"
+      onWheel={(e) => {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          e.currentTarget.scrollLeft += e.deltaY;
+        }
+      }}
+    >
       {projectsData.map((proyecto, index) => {
         // Alternate styling based on index (White vs LIME)
         const isAccent = index % 2 !== 0;
@@ -42,7 +50,7 @@ const ProjectsList = () => {
         return (
           <article
             key={proyecto.id}
-            className="w-full md:w-[calc(50%-1.25rem)] lg:w-[calc(33.333%-1.666rem)] flex-shrink-0 min-w-[320px] border-2 border-neo-border flex flex-col group"
+            className="flex-shrink-0 w-[320px] md:w-[360px] border-2 border-neo-border flex flex-col group"
           >
 
             {/* Square Image Block */}
