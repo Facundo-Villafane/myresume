@@ -25,6 +25,7 @@ dist-ssr
 
 # Archivos de configuración sensibles
 /src/config/adminConfig.js
+/public/*
 
 #Archivos de firebase
 firebaseConfig.js
