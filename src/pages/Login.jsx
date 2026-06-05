@@ -1,5 +1,5 @@
 import { auth } from "../firebaseConfig";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { FaArrowLeft, FaGoogle, FaLock } from "react-icons/fa";
@@ -10,15 +10,32 @@ function Login() {
 
   const ADMIN_UID = import.meta.env.VITE_ADMIN_UID;
 
-  // Verificar si el usuario ya está autenticado al cargar la página
   useEffect(() => {
+    // Procesar resultado del redirect de Google
+    setIsLoading(true);
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          const user = result.user;
+          if (user.uid === ADMIN_UID) {
+            navigate("/admin");
+          } else {
+            auth.signOut();
+            setError("No tienes permisos para acceder al panel de administración.");
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Error en redirect:", err);
+        setError("Error al iniciar sesión. Por favor, intenta de nuevo.");
+      })
+      .finally(() => setIsLoading(false));
+
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        // Verificar si el usuario es el administrador autorizado
         if (user.uid === ADMIN_UID) {
           navigate("/admin");
         } else {
-          // Cerrar sesión si no es el administrador autorizado
           auth.signOut();
           setError("No tienes permisos para acceder al panel de administración.");
         }
@@ -31,28 +48,12 @@ function Login() {
   const handleLogin = async () => {
     setIsLoading(true);
     setError(null);
-    
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      // Verificar si el usuario que inició sesión es el administrador autorizado
-      if (user.uid === ADMIN_UID) {
-        navigate("/admin"); // Redirige al panel si el login es exitoso y es el admin
-      } else {
-        // Cerrar sesión si no es el administrador autorizado
-        await auth.signOut();
-        setError("No tienes permisos para acceder al panel de administración.");
-      }
+      await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Error en login:", error);
-      setError(
-        error.code === 'auth/popup-closed-by-user' 
-          ? "Inicio de sesión cancelado. Por favor, intenta de nuevo." 
-          : "Error al iniciar sesión. Por favor, intenta de nuevo."
-      );
-    } finally {
+      setError("Error al iniciar sesión. Por favor, intenta de nuevo.");
       setIsLoading(false);
     }
   };
