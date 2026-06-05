@@ -25,7 +25,6 @@ dist-ssr
 
 # Archivos de configuración sensibles
 /src/config/adminConfig.js
-/public/*
 
 # Variables de entorno locales
 .env.local

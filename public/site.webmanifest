@@ -1,0 +1,16 @@
+{
+  "name": "Facundo Villafañe - Portafolio",
+  "short_name": "FV Portfolio",
+  "description": "Portafolio profesional de Facundo Villafañe",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
