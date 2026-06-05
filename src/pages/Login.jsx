@@ -1,5 +1,5 @@
 import { auth } from "../firebaseConfig";
-import { signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { FaArrowLeft, FaGoogle, FaLock } from "react-icons/fa";
@@ -11,26 +11,6 @@ function Login() {
   const ADMIN_UID = import.meta.env.VITE_ADMIN_UID;
 
   useEffect(() => {
-    // Procesar resultado del redirect de Google
-    setIsLoading(true);
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          const user = result.user;
-          if (user.uid === ADMIN_UID) {
-            navigate("/admin");
-          } else {
-            auth.signOut();
-            setError("No tienes permisos para acceder al panel de administración.");
-          }
-        }
-      })
-      .catch((err) => {
-        console.error("Error en redirect:", err);
-        setError("Error al iniciar sesión. Por favor, intenta de nuevo.");
-      })
-      .finally(() => setIsLoading(false));
-
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         if (user.uid === ADMIN_UID) {
@@ -41,7 +21,6 @@ function Login() {
         }
       }
     });
-
     return () => unsubscribe();
   }, [ADMIN_UID, navigate]);
 
@@ -50,10 +29,20 @@ function Login() {
     setError(null);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      if (user.uid === ADMIN_UID) {
+        navigate("/admin");
+      } else {
+        await auth.signOut();
+        setError("No tienes permisos para acceder al panel de administración.");
+      }
     } catch (error) {
       console.error("Error en login:", error);
-      setError("Error al iniciar sesión. Por favor, intenta de nuevo.");
+      if (error.code !== "auth/popup-closed-by-user") {
+        setError("Error al iniciar sesión. Por favor, intenta de nuevo.");
+      }
+    } finally {
       setIsLoading(false);
     }
   };
