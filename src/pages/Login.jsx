@@ -31,8 +31,7 @@ function Login() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log("Tu UID es:", user.uid);
-      if (user.uid === ADMIN_UID) {
+if (user.uid === ADMIN_UID) {
         navigate("/admin");
       } else {
         await auth.signOut();
