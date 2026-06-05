@@ -55,7 +55,7 @@ const ExperienceManager = () => {
     { 
       key: "fechaFin", 
       label: "Fin",
-      render: (value, item) => value ? formatDate(value) : "Presente"
+      render: (value) => value ? formatDate(value) : "Presente"
     },
     { 
       key: "ubicacion", 

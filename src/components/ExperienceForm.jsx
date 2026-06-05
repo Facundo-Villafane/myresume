@@ -112,7 +112,7 @@ const ExperienceForm = () => {
       const month = date.toLocaleString('default', { month: 'short' });
       const year = date.getFullYear();
       return `${month} ${year}`;
-    } catch (error) {
+    } catch {
       return "Fecha inválida";
     }
   };

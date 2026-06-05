@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion as Motion, useMotionValue, useSpring } from "framer-motion";
 
 const springValues = {
   damping: 30,
@@ -89,7 +89,7 @@ export default function TiltedCard({
         </div>
       )}
 
-      <motion.div
+      <Motion.div
         className="relative [transform-style:preserve-3d]"
         style={{
           width: imageWidth,
@@ -99,7 +99,7 @@ export default function TiltedCard({
           scale,
         }}
       >
-        <motion.img
+        <Motion.img
           src={imageSrc}
           alt={altText}
           className="absolute top-0 left-0 object-cover rounded-[15px] will-change-transform [transform:translateZ(0)]"
@@ -110,16 +110,16 @@ export default function TiltedCard({
         />
 
         {displayOverlayContent && overlayContent && (
-          <motion.div
+          <Motion.div
             className="absolute top-0 left-0 z-[2] will-change-transform [transform:translateZ(30px)]"
           >
             {overlayContent}
-          </motion.div>
+          </Motion.div>
         )}
-      </motion.div>
+      </Motion.div>
 
       {showTooltip && (
-        <motion.figcaption
+        <Motion.figcaption
           className="pointer-events-none absolute left-0 top-0 rounded-[4px] bg-white px-[10px] py-[4px] text-[10px] text-[#2d2d2d] opacity-0 z-[3] hidden sm:block"
           style={{
             x,
@@ -129,7 +129,7 @@ export default function TiltedCard({
           }}
         >
           {captionText}
-        </motion.figcaption>
+        </Motion.figcaption>
       )}
     </figure>
   );

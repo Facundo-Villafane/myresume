@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 const InteractiveKnob = ({ onChange, initialValue = 0 }) => {
     const [rotation, setRotation] = useState(initialValue);
@@ -25,7 +25,7 @@ const InteractiveKnob = ({ onChange, initialValue = 0 }) => {
             ))}
 
             {/* The rotating knob */}
-            <motion.div
+            <Motion.div
                 className="w-8 h-8 rounded-full bg-metal-dark shadow-panel-outset relative cursor-pointer active:scale-95"
                 animate={{ rotate: rotation }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -38,7 +38,7 @@ const InteractiveKnob = ({ onChange, initialValue = 0 }) => {
                 <div className="absolute inset-x-1 inset-y-1 rounded-full border border-black/30 pointer-events-none" style={{
                     background: 'repeating-conic-gradient(from 0deg, transparent 0deg 10deg, rgba(0,0,0,0.2) 10deg 20deg)'
                 }}></div>
-            </motion.div>
+            </Motion.div>
         </div>
     );
 };

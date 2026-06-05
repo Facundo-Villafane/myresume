@@ -1,8 +1,17 @@
 import React from "react";
 import DataManager from "./DataManager";
+import { extractDominantColorFromImage } from "../utils/imageColor";
 
 // Gestor de Proyectos
 const ProjectManager = () => {
+  const projectCategories = [
+    { id: "juegos", name: "Juegos" },
+    { id: "paginas-web", name: "Páginas web" },
+    { id: "apps", name: "Apps" },
+    { id: "herramientas", name: "Herramientas" },
+    { id: "arte", name: "Arte" },
+  ];
+
   // Lista de tipos de proyecto
   const projectTypes = [
     { id: "github", name: "GitHub" },
@@ -42,6 +51,11 @@ const ProjectManager = () => {
     const type = projectTypes.find(t => t.id === typeId);
     return type ? type.name : typeId;
   };
+
+  const getCategoryName = (categoryId) => {
+    const category = projectCategories.find(category => category.id === categoryId);
+    return category ? category.name : "Sin categoría";
+  };
   
   // Función para obtener los nombres de las tecnologías a partir de sus IDs
   const getTechNames = (techIds) => {
@@ -70,10 +84,39 @@ const ProjectManager = () => {
         ) : "—";
       }
     },
+    {
+      key: "brief",
+      label: "Pedido",
+      render: (value) => value ? <div className="truncate max-w-xs">{value}</div> : "—"
+    },
+    {
+      key: "solucion",
+      label: "Solución",
+      render: (value) => value ? <div className="truncate max-w-xs">{value}</div> : "—"
+    },
     { 
       key: "tipo", 
       label: "Tipo",
       render: (value) => getTypeName(value)
+    },
+    {
+      key: "categoria",
+      label: "Categoría",
+      render: (value) => (
+        <span className="rounded-full bg-slate-950 px-2 py-1 text-xs font-black text-white">
+          {getCategoryName(value)}
+        </span>
+      )
+    },
+    {
+      key: "accentColor",
+      label: "Color",
+      render: (value) => value ? (
+        <span className="inline-flex items-center gap-2 font-black">
+          <span className="h-4 w-4 rounded-full border border-slate-300" style={{ backgroundColor: value }} />
+          {value}
+        </span>
+      ) : "—"
     },
     { 
       key: "enlace", 
@@ -100,6 +143,8 @@ const ProjectManager = () => {
   
   // Componente personalizado para editar proyectos
   const ProjectEditForm = ({ data, onChange, onSave, onCancel }) => {
+    const colorInputValue = /^#[0-9a-f]{6}$/i.test(data.accentColor || "") ? data.accentColor : "#00c979";
+
     // Manejar la selección de tecnologías
     const handleTechToggle = (techId) => {
       let updatedTechs;
@@ -123,6 +168,20 @@ const ProjectManager = () => {
         }
       });
     };
+
+    const handlePickImageColor = async () => {
+      try {
+        const color = await extractDominantColorFromImage(data.imagenUrl);
+        onChange({
+          target: {
+            name: "accentColor",
+            value: color
+          }
+        });
+      } catch (error) {
+        alert(error.message);
+      }
+    };
     
     return (
       <div className="space-y-4 max-h-[80vh] overflow-y-auto">
@@ -138,6 +197,38 @@ const ProjectManager = () => {
             className="border p-2 rounded w-full"
             required
           />
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+          <label className="block text-sm font-black mb-2">Color de énfasis de la card:</label>
+          <div className="grid gap-3 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+            <input
+              type="color"
+              name="accentColor"
+              value={colorInputValue}
+              onChange={onChange}
+              className="h-11 w-16 cursor-pointer rounded-xl border border-slate-200 bg-white p-1"
+            />
+            <input
+              type="text"
+              name="accentColor"
+              value={data.accentColor || ""}
+              onChange={onChange}
+              className="border p-2 rounded w-full"
+              placeholder="#00c979"
+            />
+            <button
+              type="button"
+              onClick={handlePickImageColor}
+              className="rounded-xl bg-slate-950 px-3 py-2 text-sm font-black text-white disabled:opacity-40"
+              disabled={!data.imagenUrl}
+            >
+              Tomar de imagen
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-gray-500">
+            Si la URL externa bloquea lectura de píxeles, usá el selector manual.
+          </p>
         </div>
         
         <div>
@@ -179,6 +270,48 @@ const ProjectManager = () => {
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Pedido / problema:</label>
+            <textarea
+              name="brief"
+              value={data.brief || ''}
+              onChange={onChange}
+              className="border p-2 rounded w-full min-h-[90px]"
+              placeholder="Ej: Necesito mostrar mis juegos de forma más clara."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Respuesta / solución:</label>
+            <textarea
+              name="solucion"
+              value={data.solucion || ''}
+              onChange={onChange}
+              className="border p-2 rounded w-full min-h-[90px]"
+              placeholder="Ej: Armé una experiencia con categorías, previews y CTA."
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Categoría del portfolio:</label>
+          <select
+            name="categoria"
+            value={data.categoria || 'herramientas'}
+            onChange={onChange}
+            className="border p-2 rounded w-full"
+          >
+            {projectCategories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-500">
+            Este campo define en qué bloque aparece el proyecto en el portfolio público.
+          </p>
         </div>
         
         <div>
@@ -252,10 +385,13 @@ const ProjectManager = () => {
   
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">Gestionar Proyectos</h2>
-      <p className="text-gray-600 mb-6">
-        Aquí puedes editar o eliminar los proyectos que has añadido a tu perfil.
-      </p>
+      <div className="mb-6">
+        <p className="admin-eyebrow">Catálogo público</p>
+        <h2 className="text-2xl font-black text-slate-950">Gestionar proyectos</h2>
+        <p className="text-slate-500">
+          Editá enlaces, imágenes, tecnologías y la categoría donde aparece cada proyecto.
+        </p>
+      </div>
       
       <DataManager
         collectionName="proyectos"

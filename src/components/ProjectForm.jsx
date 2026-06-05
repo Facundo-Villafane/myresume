@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { extractDominantColorFromImage } from "../utils/imageColor";
 
 // Lista de tecnologías disponibles (se puede expandir según necesidades)
 const availableTechnologies = [
@@ -47,14 +48,27 @@ const availableTechnologies = [
   { id: "cplusplus", name: "C++", icon: "SiCplusplus" },
 ];
 
+const projectCategories = [
+  { id: "juegos", name: "Juegos", help: "Videojuegos, prototipos, game jams, itch.io" },
+  { id: "paginas-web", name: "Páginas web", help: "Sitios, landing pages, portfolios" },
+  { id: "apps", name: "Apps", help: "Aplicaciones, dashboards, productos" },
+  { id: "herramientas", name: "Herramientas", help: "Utilidades, admin panels, sistemas internos" },
+  { id: "arte", name: "Arte", help: "Ilustración, piezas visuales, pixel art, sketches" },
+];
+
 const ProjectForm = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [brief, setBrief] = useState("");
+  const [solution, setSolution] = useState("");
   const [link, setLink] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [accentColor, setAccentColor] = useState("#00c979");
+  const [category, setCategory] = useState("juegos");
   const [isLoading, setIsLoading] = useState(false);
   const [linkType, setLinkType] = useState("");
   const [selectedTechnologies, setSelectedTechnologies] = useState([]);
+  const colorInputValue = /^#[0-9a-f]{6}$/i.test(accentColor) ? accentColor : "#00c979";
   
   // Detectar el tipo de enlace y generar una imagen de vista previa
   useEffect(() => {
@@ -131,17 +145,25 @@ const ProjectForm = () => {
       await addDoc(collection(db, "proyectos"), {
         titulo: title,
         descripcion: description,
+        brief,
+        solucion: solution,
         enlace: link,
         imagenUrl: imageUrl,    // URL de la imagen
+        accentColor,            // Color de énfasis visible en la card
         tipo: linkType,         // Tipo de enlace
+        categoria: category,    // Categoría usada por el portfolio público
         tecnologias: selectedTechnologies, // IDs de las tecnologías utilizadas
         createdAt: serverTimestamp(),
       });
 
       setTitle("");
       setDescription("");
+      setBrief("");
+      setSolution("");
       setLink("");
       setImageUrl("");
+      setAccentColor("#00c979");
+      setCategory("juegos");
       setLinkType("");
       setSelectedTechnologies([]);
       
@@ -160,23 +182,41 @@ const ProjectForm = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setImageUrl(reader.result);
+    reader.onloadend = async () => {
+      const dataUrl = reader.result;
+      setImageUrl(dataUrl);
+      try {
+        setAccentColor(await extractDominantColorFromImage(dataUrl));
+      } catch {
+        // La imagen sigue siendo usable aunque no se pueda leer el color.
+      }
       alert("Para guardar esta imagen de forma permanente, necesitarás subirla a un servicio como ImgBB y pegar el enlace que te proporcionen en el campo 'URL de la imagen'.");
     };
     reader.readAsDataURL(file);
   };
 
+  const handlePickImageColor = async () => {
+    try {
+      setAccentColor(await extractDominantColorFromImage(imageUrl));
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 border rounded">
-      <h2 className="text-lg font-semibold">Agregar Proyecto</h2>
+    <form onSubmit={handleSubmit} className="admin-card flex flex-col gap-5">
+      <div>
+        <p className="admin-eyebrow">Contenido público</p>
+        <h2 className="text-2xl font-black text-slate-950">Agregar proyecto</h2>
+        <p className="text-sm text-slate-500">Todo lo que cargues acá aparece catalogado en la sección de proyectos.</p>
+      </div>
       
       <input
         type="text"
         placeholder="Título"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="border p-2 rounded"
+        className="admin-input"
         required
       />
       
@@ -184,9 +224,57 @@ const ProjectForm = () => {
         placeholder="Descripción"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        className="border p-2 rounded min-h-[100px]"
+        className="admin-input min-h-[110px]"
         required
       />
+
+      <div className="admin-subcard">
+        <h3 className="mb-2 text-sm font-black text-slate-800">Burbujas tipo conversación</h3>
+        <p className="mb-3 text-xs font-bold text-slate-500">
+          Esto aparece en el front como si alguien pidiera algo y el proyecto respondiera con una solución.
+        </p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-black text-slate-700">Pedido / problema</label>
+            <textarea
+              placeholder="Ej: Necesito una app para encontrar equipo rápido."
+              value={brief}
+              onChange={(e) => setBrief(e.target.value)}
+              className="admin-input min-h-[96px]"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-black text-slate-700">Respuesta / solución</label>
+            <textarea
+              placeholder="Ej: Diseñé Tindev, con swipes y matches para formar equipos."
+              value={solution}
+              onChange={(e) => setSolution(e.target.value)}
+              className="admin-input min-h-[96px]"
+            />
+          </div>
+        </div>
+      </div>
+      
+      <div>
+        <label className="mb-2 block text-sm font-black text-slate-700">Categoría del portfolio</label>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {projectCategories.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setCategory(item.id)}
+              className={`rounded-2xl border p-3 text-left transition ${
+                category === item.id
+                  ? "border-slate-950 bg-slate-950 text-white shadow-[0_6px_0_#d8e2ff]"
+                  : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
+              }`}
+            >
+              <span className="block text-sm font-black">{item.name}</span>
+              <span className={`mt-1 block text-[11px] leading-tight ${category === item.id ? "text-white/70" : "text-slate-400"}`}>{item.help}</span>
+            </button>
+          ))}
+        </div>
+      </div>
       
       <div className="space-y-2">
         <label htmlFor="link" className="block text-sm font-medium">Enlace del proyecto:</label>
@@ -196,14 +284,14 @@ const ProjectForm = () => {
           placeholder="https://ejemplo.com/proyecto"
           value={link}
           onChange={(e) => setLink(e.target.value)}
-          className="border p-2 rounded w-full"
+          className="admin-input"
           required
         />
       </div>
 
       {/* Selector de tecnologías */}
-      <div className="border p-3 rounded bg-gray-50">
-        <h3 className="text-sm font-medium mb-2">Tecnologías utilizadas (máximo 3):</h3>
+      <div className="admin-subcard">
+        <h3 className="text-sm font-black mb-2 text-slate-800">Tecnologías utilizadas (máximo 3)</h3>
         <div className="flex flex-wrap gap-2">
           {availableTechnologies.map(tech => (
             <button
@@ -212,8 +300,8 @@ const ProjectForm = () => {
               onClick={() => handleTechnologySelection(tech.id)}
               className={`text-xs px-2 py-1 rounded-full transition-colors ${
                 selectedTechnologies.includes(tech.id)
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  ? 'bg-slate-950 text-white'
+                  : 'bg-white text-slate-700 hover:bg-slate-100'
               }`}
             >
               {tech.name}
@@ -227,12 +315,12 @@ const ProjectForm = () => {
               {selectedTechnologies.map(techId => {
                 const tech = availableTechnologies.find(t => t.id === techId);
                 return (
-                  <div key={techId} className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                  <div key={techId} className="flex items-center gap-1 bg-[#1398ff] text-slate-950 px-2 py-1 rounded-full text-xs font-black">
                     {tech.name}
                     <button
                       type="button"
                       onClick={() => handleTechnologySelection(techId)}
-                      className="text-blue-800 hover:text-blue-900"
+                      className="text-slate-950 hover:text-white"
                     >
                       &times;
                     </button>
@@ -245,8 +333,8 @@ const ProjectForm = () => {
       </div>
 
       {/* Vista previa de la imagen */}
-      <div className="border p-3 rounded bg-gray-50">
-        <h3 className="text-sm font-medium mb-2">Vista previa de la imagen:</h3>
+      <div className="admin-subcard">
+        <h3 className="text-sm font-black mb-2 text-slate-800">Vista previa de la imagen</h3>
         
         {imageUrl ? (
           <div className="space-y-2">
@@ -281,14 +369,34 @@ const ProjectForm = () => {
               className="text-sm"
             />
             <div className="flex items-center gap-2">
-              <span className="text-sm">o URL de imagen:</span>
+              <span className="text-sm font-bold text-slate-600">o URL de imagen:</span>
               <input
                 type="url"
                 placeholder="https://ejemplo.com/imagen.jpg"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                className="border p-1 rounded flex-1 text-sm"
+                className="admin-input flex-1 text-sm"
               />
+            </div>
+            <div className="grid gap-3 rounded-2xl bg-white p-3 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+              <label className="text-sm font-black text-slate-700">Color de énfasis</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={colorInputValue}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  className="h-11 w-16 cursor-pointer rounded-xl border border-slate-200 bg-white p-1"
+                />
+                <input
+                  type="text"
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  className="admin-input text-sm"
+                />
+              </div>
+              <button type="button" onClick={handlePickImageColor} className="admin-secondary-btn" disabled={!imageUrl}>
+                Tomar de imagen
+              </button>
             </div>
             <p className="text-xs text-gray-500">
               Consejo: Puedes subir tu imagen a servicios gratuitos como 
@@ -302,7 +410,7 @@ const ProjectForm = () => {
       
       <button 
         type="submit" 
-        className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors"
+        className="admin-primary-btn"
         disabled={isLoading}
       >
         {isLoading ? "Guardando..." : "Guardar Proyecto"}

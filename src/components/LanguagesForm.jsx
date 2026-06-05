@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { db } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
@@ -69,6 +69,8 @@ const LanguagesForm = () => {
         // Si es un idioma seleccionado de la lista
         const langData = commonLanguages.find(l => l.code === selectedLanguage);
         languageData = {
+          idioma: langData.name,
+          nivel: level,
           nombre: langData.name,
           level: level,
           bandera: langData.flag,
@@ -78,6 +80,8 @@ const LanguagesForm = () => {
       } else {
         // Si es un idioma personalizado
         languageData = {
+          idioma: customLanguage,
+          nivel: level,
           nombre: customLanguage,
           level: level,
           bandera: customFlag || "",
@@ -87,7 +91,7 @@ const LanguagesForm = () => {
       }
       
       // Guardar en Firestore
-      await addDoc(collection(db, "lenguajes"), languageData);
+      await addDoc(collection(db, "idiomas"), languageData);
       
       // Resetear el formulario
       setSelectedLanguage("");
@@ -107,8 +111,12 @@ const LanguagesForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 border rounded">
-      <h2 className="text-lg font-semibold">Agregar Idioma</h2>
+    <form onSubmit={handleSubmit} className="admin-card flex flex-col gap-5">
+      <div>
+        <p className="admin-eyebrow">Perfil público</p>
+        <h2 className="text-2xl font-black text-slate-950">Agregar idioma</h2>
+        <p className="text-sm text-slate-500">Se guarda en la misma colección que lee la sección Idiomas del portfolio.</p>
+      </div>
       
       {/* Búsqueda de idioma */}
       <div>
@@ -118,12 +126,12 @@ const LanguagesForm = () => {
           placeholder="Buscar por idioma o país..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="border p-2 rounded w-full"
+          className="admin-input"
         />
       </div>
       
       {/* Selector de idioma con banderas */}
-      <div className="border p-3 rounded bg-gray-50 max-h-60 overflow-y-auto">
+      <div className="admin-subcard max-h-60 overflow-y-auto">
         <h3 className="text-sm font-medium mb-2">Idiomas disponibles:</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
           {filteredLanguages.map(lang => (
@@ -138,7 +146,7 @@ const LanguagesForm = () => {
               }}
               className={`p-2 rounded flex items-center gap-2 transition-colors text-left ${
                 selectedLanguage === lang.code
-                  ? 'bg-blue-100 border border-blue-500'
+                  ? 'bg-[#1398ff]/20 border border-[#1398ff]'
                   : 'bg-white border hover:bg-gray-100'
               }`}
             >
@@ -180,7 +188,7 @@ const LanguagesForm = () => {
                 setCustomLanguage(e.target.value);
                 setSelectedLanguage("");
               }}
-              className="border p-2 rounded w-full"
+              className="admin-input"
             />
           </div>
           
@@ -191,7 +199,7 @@ const LanguagesForm = () => {
               placeholder="Ej: España"
               value={customCountry}
               onChange={(e) => setCustomCountry(e.target.value)}
-              className="border p-2 rounded w-full"
+              className="admin-input"
             />
           </div>
           
@@ -202,7 +210,7 @@ const LanguagesForm = () => {
               placeholder="https://example.com/bandera.png"
               value={customFlag}
               onChange={(e) => setCustomFlag(e.target.value)}
-              className="border p-2 rounded w-full"
+              className="admin-input"
             />
             <p className="text-xs text-gray-500 mt-1">
               Puedes buscar imágenes de banderas en sitios como{" "}
@@ -299,7 +307,7 @@ const LanguagesForm = () => {
       
       <button 
         type="submit" 
-        className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors"
+        className="admin-primary-btn"
         disabled={isLoading || (!selectedLanguage && !customLanguage)}
       >
         {isLoading ? "Guardando..." : "Guardar Idioma"}

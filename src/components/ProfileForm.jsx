@@ -12,6 +12,7 @@ const ProfileForm = () => {
   const [profileData, setProfileData] = useState({
     fullName: "",
     title: "",
+    aboutText: "",
     quote: "",
     quoteAuthor: "",
     email: "",
@@ -283,6 +284,21 @@ const ProfileForm = () => {
         </div>
       </div>
       
+      {/* Cita */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Sobre mí</label>
+        <textarea
+          name="aboutText"
+          value={profileData.aboutText || ""}
+          onChange={handleChange}
+          className="border p-2 rounded w-full min-h-[130px]"
+          placeholder="Escribe un texto más personal para la sección Sobre mí. Puedes contar qué haces, qué buscas y cómo te gusta trabajar."
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Este texto reemplaza la frase corta en la sección Sobre mí del portfolio.
+        </p>
+      </div>
+
       {/* Cita */}
       <div>
         <label className="block text-sm font-medium mb-1">Cita o frase</label>

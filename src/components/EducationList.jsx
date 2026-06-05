@@ -12,7 +12,7 @@ const EducationList = () => {
   const q = collection(db, "educacion");
   const [educacion, loading, error] = useCollectionData(q, { idField: "id" });
 
-  if (loading) return <p className="text-black animate-pulse font-mono uppercase">Cargando...</p>;
+  if (loading) return <p className="text-current animate-pulse font-mono uppercase">Cargando...</p>;
   if (error) return <p className="text-red-500 font-bold uppercase">Error: {error.message}</p>;
 
   let educationData = educacion && educacion.length > 0 ? educacion : mockEducation;
@@ -34,20 +34,20 @@ const EducationList = () => {
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-3">
       {educationData.map((edu, index) => {
         // Alternar fondos entre blanco y verde lima
         const isAccent = index % 2 !== 0;
 
         return (
-          <div key={edu.id} className={`p-6 border-2 border-neo-border flex flex-col justify-between min-h-[150px] ${isAccent ? 'bg-neo-accent text-neo-border' : 'bg-neo-panel text-neo-border'}`}>
-            <div className="mb-4">
-              <span className="bg-neo-border text-neo-panel text-[9px] font-black px-2 py-1 uppercase tracking-widest mb-3 inline-block">Educación</span>
-              <h3 className="font-extended font-black text-lg md:text-xl uppercase tracking-tighter leading-tight">
+          <div key={edu.id || `${edu.titulo}-${edu.institucion}-${index}`} className={`rounded-[24px] p-4 flex flex-col justify-between min-h-[128px] overflow-hidden ${isAccent ? 'bg-[#ff9f1a] text-[#131313]' : 'bg-[#131313] text-[#fdfbfb]'}`}>
+            <div className="mb-4 min-w-0">
+              <span className={`rounded-md text-[9px] font-black px-2 py-1 uppercase mb-3 inline-block ${isAccent ? 'bg-[#131313] text-[#fdfbfb]' : 'bg-[#f164d8] text-[#131313]'}`}>Educación</span>
+              <h3 className="font-extended font-black text-base uppercase leading-[1.05] break-words">
                 {edu.titulo}
               </h3>
             </div>
-            <p className="font-mono text-[10px] uppercase">{typeof edu.institucion === 'string' ? edu.institucion : edu.institucion?.name || 'Unknown'}</p>
+            <p className="font-mono text-[10px] font-black uppercase leading-tight opacity-85">{typeof edu.institucion === 'string' ? edu.institucion : edu.institucion?.name || 'Unknown'}</p>
           </div>
         );
       })}

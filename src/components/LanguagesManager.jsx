@@ -16,7 +16,7 @@ const LanguagesManager = () => {
   // Definir los campos a mostrar en la tabla
   const displayFields = [
     { 
-      key: "nombre", 
+      key: "idioma", 
       label: "Idioma" 
     },
     { 
@@ -24,7 +24,7 @@ const LanguagesManager = () => {
       label: "País" 
     },
     { 
-      key: "level", 
+      key: "nivel", 
       label: "Nivel",
       render: (value) => {
         return `${value} - ${languageLevels[value] || ""}`;
@@ -63,8 +63,8 @@ const LanguagesManager = () => {
             <label className="block text-sm font-medium mb-1">Idioma:</label>
             <input
               type="text"
-              name="nombre"
-              value={data.nombre || ''}
+              name="idioma"
+              value={data.idioma || data.nombre || ''}
               onChange={onChange}
               className="border p-2 rounded w-full"
               required
@@ -87,8 +87,11 @@ const LanguagesManager = () => {
           <label className="block text-sm font-medium mb-1">Nivel:</label>
           <select
             name="level"
-            value={data.level || 'B1'}
-            onChange={onChange}
+            value={data.nivel || data.level || 'B1'}
+            onChange={(event) => {
+              onChange({ target: { name: 'nivel', value: event.target.value } });
+              onChange({ target: { name: 'level', value: event.target.value } });
+            }}
             className="border p-2 rounded w-full"
           >
             {Object.entries(languageLevels).map(([code, description]) => (
@@ -145,13 +148,13 @@ const LanguagesManager = () => {
               )}
             </div>
             <div>
-              <p className="font-medium">{data.nombre || "Nombre del idioma"}</p>
+              <p className="font-medium">{data.idioma || data.nombre || "Nombre del idioma"}</p>
               <div className="flex items-center gap-2">
                 <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded">
-                  {data.level || "B1"}
+                  {data.nivel || data.level || "B1"}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {languageLevels[data.level || "B1"]}
+                  {languageLevels[data.nivel || data.level || "B1"]}
                 </span>
                 {data.pais && (
                   <span className="text-xs text-gray-400">
@@ -185,13 +188,14 @@ const LanguagesManager = () => {
   
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">Gestionar Idiomas</h2>
-      <p className="text-gray-600 mb-6">
-        Aquí puedes editar o eliminar los idiomas que has añadido a tu perfil.
-      </p>
+      <div className="mb-6">
+        <p className="admin-eyebrow">Perfil público</p>
+        <h2 className="text-2xl font-black text-slate-950">Gestionar idiomas</h2>
+        <p className="text-slate-500">Estos registros alimentan directamente la sección Idiomas del portfolio.</p>
+      </div>
       
       <DataManager
-        collectionName="lenguajes"
+        collectionName="idiomas"
         displayFields={displayFields}
         title="Idiomas"
         sortField="createdAt"

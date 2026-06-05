@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 const CRTMonitor = ({ children, title, className = '' }) => {
     return (
@@ -31,7 +31,7 @@ const CRTMonitor = ({ children, title, className = '' }) => {
                     }}></div>
 
                     {/* Slight flickering for CRT realism */}
-                    <motion.div
+                    <Motion.div
                         className="absolute inset-0 z-40 bg-white pointer-events-none"
                         animate={{ opacity: [0.01, 0.03, 0.01, 0.02, 0.01] }}
                         transition={{ repeat: Infinity, duration: 0.2, ease: "linear" }}

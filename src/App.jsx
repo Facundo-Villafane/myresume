@@ -18,6 +18,7 @@ import ToolsForm from "./components/ToolsForm";
 import ToolsManager from "./components/ToolsManager";
 import LanguagesForm from "./components/LanguagesForm";
 import LanguagesManager from "./components/LanguagesManager";
+import { FaBriefcase, FaCog, FaFolder, FaGraduationCap, FaLanguage, FaTools } from "react-icons/fa";
 
 function App() {
   return (
@@ -68,29 +69,29 @@ function App() {
 
 // Componente simple para el dashboard
 const AdminDashboard = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <DashboardCard title="Perfil" path="/admin/profile" icon="👤" />
-    <DashboardCard title="Experiencia" path="/admin/experience" icon="💼" />
-    <DashboardCard title="Educación" path="/admin/education" icon="🎓" />
-    <DashboardCard title="Proyectos" path="/admin/projects" icon="📁" />
-    <DashboardCard title="Herramientas" path="/admin/tools" icon="🔧" />
-    <DashboardCard title="Idiomas" path="/admin/languages" icon="🌐" />
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <DashboardCard title="Perfil" path="/admin/profile" icon={<FaCog />} color="#1398ff" description="Nombre, foto, redes y hero público." />
+    <DashboardCard title="Experiencia" path="/admin/experience" icon={<FaBriefcase />} color="#00c979" description="Trabajos y timeline profesional." />
+    <DashboardCard title="Educación" path="/admin/education" icon={<FaGraduationCap />} color="#ff9f1a" description="Cursos, instituciones y formación." />
+    <DashboardCard title="Proyectos" path="/admin/projects" icon={<FaFolder />} color="#f164d8" description="Catálogo separado por categorías." />
+    <DashboardCard title="Herramientas" path="/admin/tools" icon={<FaTools />} color="#ff5b57" description="Hard skills, soft skills y tecnologías." />
+    <DashboardCard title="Idiomas" path="/admin/languages" icon={<FaLanguage />} color="#8b5cf6" description="Idiomas visibles en el portfolio." />
   </div>
 );
 
 // Tarjeta para el dashboard
-const DashboardCard = ({ title, path, icon }) => (
+const DashboardCard = ({ title, path, icon, color, description }) => (
   <a 
     href={path}
-    className="bg-white overflow-hidden shadow rounded-lg p-6 hover:shadow-md transition-shadow"
+    className="admin-card group block hover:-translate-y-1 transition-transform"
   >
-    <div className="flex items-center">
-      <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
-        <div className="text-white text-2xl">{icon}</div>
+    <div className="flex items-start gap-4">
+      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-xl text-slate-950" style={{ backgroundColor: color }}>
+        {icon}
       </div>
-      <div className="ml-5">
-        <h3 className="text-lg font-medium text-gray-900">{title}</h3>
-        <p className="text-sm text-gray-500">Administrar {title.toLowerCase()}</p>
+      <div>
+        <h3 className="text-xl font-black text-slate-950">{title}</h3>
+        <p className="mt-1 text-sm font-bold text-slate-500">{description}</p>
       </div>
     </div>
   </a>

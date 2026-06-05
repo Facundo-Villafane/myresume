@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   collection, query, orderBy, doc, deleteDoc, updateDoc,
-  getDocs, where
+  getDocs
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { FaEdit, FaTrash, FaCheck, FaTimes } from "react-icons/fa";
@@ -92,6 +92,7 @@ const DataManager = ({
   // Iniciar edición de un item
   const handleEdit = (item) => {
     console.log("Editando item:", item);
+    manageCallback?.("edit", item);
     setEditingItem(item);
     setEditFormData({...item});
   };
@@ -111,7 +112,7 @@ const DataManager = ({
       const itemRef = doc(db, collectionName, editingItem.id);
       
       // Remover el id del objeto antes de guardar
-      const { id, ...updateData } = editFormData;
+      const { id: _id, ...updateData } = editFormData;
       
       await updateDoc(itemRef, updateData);
       
@@ -146,6 +147,7 @@ const DataManager = ({
   
   // Confirmar eliminación
   const handleConfirmDelete = (item) => {
+    manageCallback?.("delete", item);
     setShowConfirmDelete(item);
   };
   
