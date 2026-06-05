@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore";
+import TranslatedField from "./TranslatedField";
 
 // Logos de empresas conocidas (respaldo inicial)
 const defaultCompanyLogos = {
@@ -21,11 +22,14 @@ const defaultCompanyLogos = {
 const ExperienceForm = () => {
   const [company, setCompany] = useState("");
   const [position, setPosition] = useState("");
+  const [positionEn, setPositionEn] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [currentPosition, setCurrentPosition] = useState(false);
   const [location, setLocation] = useState("");
+  const [locationEn, setLocationEn] = useState("");
   const [description, setDescription] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
   const [customLogo, setCustomLogo] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -103,6 +107,20 @@ const ExperienceForm = () => {
     return matchesSearch;
   });
 
+  const handleTranslatedChange = (e) => {
+    const { name, value } = e.target;
+    const setters = {
+      cargo: setPosition,
+      cargo_en: setPositionEn,
+      ubicacion: setLocation,
+      ubicacion_en: setLocationEn,
+      descripcion: setDescription,
+      descripcion_en: setDescriptionEn,
+    };
+
+    setters[name]?.(value);
+  };
+
   // Formatear fechas para vista previa
   const formatPreviewDate = (dateString) => {
     if (!dateString) return "Presente";
@@ -141,10 +159,13 @@ const ExperienceForm = () => {
       const experienceData = {
         empresa: company,
         cargo: position,
+        cargo_en: positionEn,
         fechaInicio: startDateObj,
         fechaFin: currentPosition ? null : endDateObj,
         ubicacion: location,
+        ubicacion_en: locationEn,
         descripcion: description,
+        descripcion_en: descriptionEn,
         logo: logoUrl,
         timestamp: serverTimestamp(),
       };
@@ -177,11 +198,14 @@ const ExperienceForm = () => {
       // Resetear el formulario
       setCompany("");
       setPosition("");
+      setPositionEn("");
       setStartDate("");
       setEndDate("");
       setCurrentPosition(false);
       setLocation("");
+      setLocationEn("");
       setDescription("");
+      setDescriptionEn("");
       setCustomLogo("");
       setSearchQuery("");
       
@@ -305,31 +329,29 @@ const ExperienceForm = () => {
         </p>
       </div>
       
-      {/* Cargo */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Cargo:</label>
-        <input
-          type="text"
-          placeholder="Ej: UX Designer"
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
-          className="border p-2 rounded w-full"
-          required
-        />
-      </div>
+      <TranslatedField
+        label="Cargo"
+        nameEs="cargo"
+        nameEn="cargo_en"
+        valueEs={position}
+        valueEn={positionEn}
+        onChange={handleTranslatedChange}
+        placeholderEs="Ej: Diseñador UX"
+        placeholderEn="Example: UX Designer"
+        required
+      />
       
-      {/* Ubicación */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Ubicación:</label>
-        <input
-          type="text"
-          placeholder="Ej: San Francisco, CA"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="border p-2 rounded w-full"
-          required
-        />
-      </div>
+      <TranslatedField
+        label="Ubicación"
+        nameEs="ubicacion"
+        nameEn="ubicacion_en"
+        valueEs={location}
+        valueEn={locationEn}
+        onChange={handleTranslatedChange}
+        placeholderEs="Ej: Buenos Aires, Argentina"
+        placeholderEn="Example: Buenos Aires, Argentina"
+        required
+      />
       
       {/* Fechas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -371,16 +393,18 @@ const ExperienceForm = () => {
         </label>
       </div>
       
-      {/* Descripción */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Descripción:</label>
-        <textarea
-          placeholder="Describe tus responsabilidades y logros"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="border p-2 rounded w-full min-h-[80px]"
-        />
-      </div>
+      <TranslatedField
+        label="Descripción"
+        nameEs="descripcion"
+        nameEn="descripcion_en"
+        valueEs={description}
+        valueEn={descriptionEn}
+        onChange={handleTranslatedChange}
+        multiline
+        className="border p-2 rounded w-full min-h-[80px]"
+        placeholderEs="Describe tus responsabilidades y logros"
+        placeholderEn="Describe your responsibilities and achievements"
+      />
       
       {/* Vista previa */}
       {(company || position) && (

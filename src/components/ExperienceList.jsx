@@ -2,13 +2,15 @@ import { collection } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { db } from "../firebaseConfig";
 import React from "react";
+import { pickLocalized, translations } from "../i18n";
 
-const ExperienceList = () => {
+const ExperienceList = ({ language = "es" }) => {
+  const t = translations[language];
   const q = collection(db, "experiencia");
   const [experiencias, loading, error] = useCollectionData(q, { idField: "id" });
 
-  if (loading) return <p className="text-current animate-pulse font-mono uppercase">Cargando datos...</p>;
-  if (error) return <p className="text-red-500 font-bold uppercase">Error: {error.message}</p>;
+  if (loading) return <p className="text-current animate-pulse font-mono uppercase">{t.status.loadingData}</p>;
+  if (error) return <p className="text-red-500 font-bold uppercase">{t.status.error}: {error.message}</p>;
 
   const showExamples = !experiencias || experiencias.length === 0;
   const ejemplos = [
@@ -43,14 +45,14 @@ const ExperienceList = () => {
   });
 
   const formatDate = (dateObj) => {
-    if (!dateObj) return "PRESENTE";
+    if (!dateObj) return t.status.present;
     try {
       let date;
       if (typeof dateObj.toDate === 'function') date = dateObj.toDate();
       else if (dateObj instanceof Date) date = dateObj;
       else if (typeof dateObj === 'number' || typeof dateObj === 'string') date = new Date(dateObj);
       else return "ERR";
-      return `${date.toLocaleString('default', { month: 'short' }).toUpperCase()} ${date.getFullYear()}`;
+      return `${date.toLocaleString(language === "en" ? "en-US" : "es-AR", { month: 'short' }).toUpperCase()} ${date.getFullYear()}`;
     } catch { return "ERR"; }
   };
 
@@ -66,10 +68,10 @@ const ExperienceList = () => {
 
           <div className="md:w-3/4">
             <h3 className="font-extended font-black text-xl md:text-2xl leading-tight uppercase tracking-tighter mb-2">
-              {exp.cargo}
+              {pickLocalized(exp, "cargo", language) || exp.cargo}
             </h3>
             <p className="font-bold text-xs uppercase tracking-widest mb-1">{typeof exp.empresa === 'string' ? exp.empresa : exp.empresa?.name || 'Unknown'}</p>
-            <p className="font-mono text-[10px] text-[#131313]/70 uppercase">{exp.ubicacion || ''}</p>
+            <p className="font-mono text-[10px] text-[#131313]/70 uppercase">{pickLocalized(exp, "ubicacion", language) || ''}</p>
           </div>
 
           <div className="md:w-1/4 md:text-right mt-2 md:mt-0">

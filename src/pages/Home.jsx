@@ -7,6 +7,7 @@ import LanguagesList from "../components/LanguagesList";
 import ProjectsList from "../components/ProjectsList";
 import ToolsList from "../components/ToolsList";
 import { FaEnvelope, FaGamepad, FaGithub, FaInstagram, FaLinkedin, FaMapMarkerAlt, FaPhone, FaGlobe } from "react-icons/fa";
+import { pickLocalized, translations } from "../i18n";
 
 const FloatingImagePlaceholder = ({ label, color = "#f164d8", className = "" }) => (
   <div className={`pointer-events-none select-none ${className}`}>
@@ -26,6 +27,8 @@ const localProfileImage = "/profile-facundo.png";
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState(() => localStorage.getItem("portfolio-language") || "es");
+  const t = translations[language];
 
   const [profileData, setProfileData] = useState({
     fullName: "Facundo Villafañe",
@@ -70,10 +73,10 @@ const Home = () => {
   };
 
   const navItems = [
-    { id: "proyectos", label: "Proyectos", color: "bg-[#00c979]", value: "#00c979" },
-    { id: "experiencia", label: "Experiencia", color: "bg-[#1398ff]", value: "#1398ff" },
-    { id: "habilidades", label: "Skills", color: "bg-[#ff9f1a]", value: "#ff9f1a" },
-    { id: "contacto", label: "Contacto", color: "bg-[#ff5b57]", value: "#ff5b57" },
+    { id: "proyectos", label: t.nav.projects, color: "bg-[#00c979]", value: "#00c979" },
+    { id: "experiencia", label: t.nav.experience, color: "bg-[#1398ff]", value: "#1398ff" },
+    { id: "habilidades", label: t.nav.skills, color: "bg-[#ff9f1a]", value: "#ff9f1a" },
+    { id: "contacto", label: t.nav.contact, color: "bg-[#ff5b57]", value: "#ff5b57" },
   ];
 
   const socialLinks = [
@@ -86,6 +89,15 @@ const Home = () => {
 
   const firstName = profileData.fullName.split(" ")[0];
   const lastName = profileData.fullName.split(" ").slice(1).join(" ");
+  const aboutText = pickLocalized(profileData, "aboutText", language) || pickLocalized(profileData, "quote", language);
+
+  const toggleLanguage = () => {
+    setLanguage((currentLanguage) => {
+      const nextLanguage = currentLanguage === "es" ? "en" : "es";
+      localStorage.setItem("portfolio-language", nextLanguage);
+      return nextLanguage;
+    });
+  };
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-neo-bg text-neo-border font-mono">
@@ -109,7 +121,7 @@ const Home = () => {
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="text-2xl sm:text-3xl font-extended font-black text-neo-panel leading-none"
-            aria-label="Volver al inicio"
+            aria-label={language === "es" ? "Volver al inicio" : "Back to top"}
           >
             FV
           </button>
@@ -124,6 +136,14 @@ const Home = () => {
                 {item.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="language-toggle"
+              aria-label={language === "es" ? "Cambiar idioma a inglés" : "Switch language to Spanish"}
+            >
+              {language.toUpperCase()}
+            </button>
           </div>
         </div>
       </nav>
@@ -174,16 +194,16 @@ const Home = () => {
           </div>
 
           <div className="max-w-4xl">
-            <p className="mb-3 text-xs font-black uppercase tracking-[0.22em] text-neo-panel/60 sm:text-sm">Portfolio personal</p>
+            <p className="mb-3 text-xs font-black uppercase tracking-[0.22em] text-neo-panel/60 sm:text-sm">{t.portfolio}</p>
             <h1 className="font-extended text-[clamp(2rem,5.8vw,4.9rem)] leading-[0.98] text-neo-panel">
-              Hola, soy{" "}
+              {t.hero.greeting}{" "}
               <span className="sticker-pill sticker-arrow bg-[#f164d8] align-middle text-[0.72em]">{firstName}</span>
               <br />
               <span className="sticker-pill sticker-arrow bg-[#1398ff] align-middle text-[0.72em]">{lastName || "dev"}</span>{" "}
-              y hago experiencias gamificadas.
+              {t.hero.action}
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base font-extrabold leading-snug text-neo-panel/80 sm:text-xl">
-              Especialista en videojuegos, webs y apps que motivan y enseñan. Transformo ideas en productos digitales vivos.
+              {t.hero.description}
             </p>
           </div>
 
@@ -192,39 +212,41 @@ const Home = () => {
         <section id="proyectos" className="scroll-mt-12">
           <div className="mb-8 grid gap-5 lg:grid-cols-[1fr_320px] lg:items-end">
             <div>
-              <h2 className="font-extended text-4xl leading-none text-neo-panel sm:text-6xl">Proyectos</h2>
+              <h2 className="font-extended text-4xl leading-none text-neo-panel sm:text-6xl">{t.sections.projects}</h2>
             </div>
             <FloatingImagePlaceholder label="SECTION IMG" color="#1398ff" className="h-40 w-full max-w-xs justify-self-start lg:justify-self-end" />
           </div>
-          <ProjectsList />
+          <ProjectsList language={language} />
         </section>
 
-        <section className="grid gap-5 lg:grid-cols-[0.95fr_1.35fr]" id="experiencia">
-          <div className="editorial-panel-dark p-6 sm:p-8">
-            <h2 className="font-extended text-4xl leading-none text-[#00c979] sm:text-5xl">Sobre mí</h2>
-            <p className="mt-5 whitespace-pre-line text-lg font-black leading-snug text-neo-panel/80">
-              {profileData.aboutText || profileData.quote}
-            </p>
-            <div id="contacto" className="mt-8 space-y-3 text-sm">
+        <section id="experiencia" className="about-experience-section scroll-mt-12">
+          <div className="about-stack-card">
+            <div className="about-copy">
+              <h2 className="font-extended text-4xl leading-none text-[#00c979] sm:text-5xl">{t.sections.about}</h2>
+              <p className="mt-5 whitespace-pre-line text-base font-bold leading-snug text-neo-panel/75 sm:text-lg">
+                {aboutText}
+              </p>
+            </div>
+            <div id="contacto" className="about-socials">
               {profileData.email && (
-                <a href={`mailto:${profileData.email}`} className="sticker-pill bg-[#ff5b57] text-xs" style={{ "--sticker-bg": "#ff5b57" }}>
+                <a href={`mailto:${profileData.email}`} className="sticker-pill about-social-email bg-[#ff5b57]" style={{ "--sticker-bg": "#ff5b57" }}>
                   <FaEnvelope aria-hidden="true" /> {profileData.email}
                 </a>
               )}
               {profileData.phone && (
-                <p className="flex items-center gap-2 text-neo-panel/80">
+                <p className="about-phone">
                   <FaPhone className="text-[#00c979]" aria-hidden="true" /> {profileData.phone}
                 </p>
               )}
               {socialLinks.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-3">
+                <div className="contents">
                   {socialLinks.map((link, index) => (
                     <a
                       key={link.label}
                       href={link.href}
                       target={link.href.startsWith("http") ? "_blank" : undefined}
                       rel={link.href.startsWith("http") ? "noreferrer" : undefined}
-                      className={`sticker-pill ${index % 2 === 0 ? "" : "sticker-alt"} ${link.color} text-[10px]`}
+                      className={`sticker-pill ${index % 2 === 0 ? "" : "sticker-alt"} ${link.color}`}
                       style={{ "--sticker-bg": link.value }}
                     >
                       {link.icon}
@@ -236,25 +258,25 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="editorial-panel p-6 sm:p-8">
-            <h2 className="mb-8 font-extended text-4xl leading-none text-[#131313] sm:text-5xl">Experiencia</h2>
-            <ExperienceList />
+          <div className="experience-stack-card">
+            <h2 className="mb-8 font-extended text-4xl leading-none text-[#131313] sm:text-5xl">{t.sections.experience}</h2>
+            <ExperienceList language={language} />
           </div>
         </section>
 
         <section className="grid gap-5 lg:grid-cols-[1.35fr_0.75fr]">
           <div id="habilidades" className="editorial-panel p-6 sm:p-8">
-            <h2 className="mb-8 font-extended text-4xl leading-none text-[#131313] sm:text-5xl">Habilidades</h2>
-            <ToolsList />
+            <h2 className="mb-8 font-extended text-4xl leading-none text-[#131313] sm:text-5xl">{t.sections.skills}</h2>
+            <ToolsList language={language} />
           </div>
 
           <div className="grid gap-5">
             <div className="editorial-panel-dark p-6 sm:p-8">
-              <h2 className="mb-6 font-extended text-4xl leading-none text-[#f164d8] sm:text-5xl">Idiomas</h2>
+              <h2 className="mb-6 font-extended text-4xl leading-none text-[#f164d8] sm:text-5xl">{t.sections.languages}</h2>
               <LanguagesList />
             </div>
             <div id="educacion" className="editorial-panel p-6 sm:p-8">
-              <h2 className="mb-6 font-extended text-4xl leading-none text-[#131313] sm:text-5xl">Educación</h2>
+              <h2 className="mb-6 font-extended text-4xl leading-none text-[#131313] sm:text-5xl">{t.sections.education}</h2>
               <EducationList />
             </div>
           </div>
@@ -262,7 +284,7 @@ const Home = () => {
       </main>
 
       <footer className="border-t border-neo-panel/10 px-4 py-10 text-center text-sm font-black uppercase text-neo-panel/55 sm:px-6">
-        {loading ? "Cargando perfil..." : `© ${new Date().getFullYear()} ${profileData.fullName}`}
+        {loading ? t.status.loadingProfile : `© ${new Date().getFullYear()} ${profileData.fullName}`}
       </footer>
     </div>
   );

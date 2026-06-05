@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import DataManager from "./DataManager";
+import TranslatedField from "./TranslatedField";
 
 // Gestor de Experiencia
 const ExperienceManager = () => {
@@ -140,17 +141,16 @@ const ExperienceManager = () => {
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-medium mb-1">Cargo:</label>
-            <input
-              type="text"
-              name="cargo"
-              value={data.cargo || ''}
-              onChange={onChange}
-              className="border p-2 rounded w-full"
-              required
-            />
-          </div>
+          <TranslatedField
+            label="Cargo"
+            nameEs="cargo"
+            nameEn="cargo_en"
+            valueEs={data.cargo || ""}
+            valueEn={data.cargo_en || ""}
+            onChange={onChange}
+            className="border p-2 rounded w-full"
+            required
+          />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -192,28 +192,30 @@ const ExperienceManager = () => {
           </div>
         </div>
         
-        <div>
-          <label className="block text-sm font-medium mb-1">Ubicación:</label>
-          <input
-            type="text"
-            name="ubicacion"
-            value={data.ubicacion || ''}
-            onChange={onChange}
-            className="border p-2 rounded w-full"
-            placeholder="Ej: Madrid, España"
-          />
-        </div>
+        <TranslatedField
+          label="Ubicación"
+          nameEs="ubicacion"
+          nameEn="ubicacion_en"
+          valueEs={data.ubicacion || ""}
+          valueEn={data.ubicacion_en || ""}
+          onChange={onChange}
+          className="border p-2 rounded w-full"
+          placeholderEs="Ej: Madrid, España"
+          placeholderEn="Example: Madrid, Spain"
+        />
         
-        <div>
-          <label className="block text-sm font-medium mb-1">Descripción:</label>
-          <textarea
-            name="descripcion"
-            value={data.descripcion || ''}
-            onChange={onChange}
-            className="border p-2 rounded w-full min-h-[100px]"
-            placeholder="Describe tus responsabilidades y logros"
-          />
-        </div>
+        <TranslatedField
+          label="Descripción"
+          nameEs="descripcion"
+          nameEn="descripcion_en"
+          valueEs={data.descripcion || ""}
+          valueEn={data.descripcion_en || ""}
+          onChange={onChange}
+          multiline
+          className="border p-2 rounded w-full min-h-[100px]"
+          placeholderEs="Describe tus responsabilidades y logros"
+          placeholderEn="Describe your responsibilities and achievements"
+        />
         
         <div>
           <label className="block text-sm font-medium mb-1">URL del logo:</label>

@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import md5 from "md5";
 import { getGravatarUrl, openGravatarEditor, refreshGravatarUrl } from "../utils/gravatar";
 import { FaSync } from "react-icons/fa";
+import TranslatedField from "./TranslatedField";
 
 const ProfileForm = () => {
   const [loading, setLoading] = useState(true);
@@ -13,7 +14,9 @@ const ProfileForm = () => {
     fullName: "",
     title: "",
     aboutText: "",
+    aboutText_en: "",
     quote: "",
+    quote_en: "",
     quoteAuthor: "",
     email: "",
     website: "",
@@ -284,33 +287,34 @@ const ProfileForm = () => {
         </div>
       </div>
       
-      {/* Cita */}
       <div>
-        <label className="block text-sm font-medium mb-1">Sobre mí</label>
-        <textarea
-          name="aboutText"
-          value={profileData.aboutText || ""}
+        <TranslatedField
+          label="Sobre mí"
+          nameEs="aboutText"
+          nameEn="aboutText_en"
+          valueEs={profileData.aboutText || ""}
+          valueEn={profileData.aboutText_en || ""}
           onChange={handleChange}
+          multiline
           className="border p-2 rounded w-full min-h-[130px]"
-          placeholder="Escribe un texto más personal para la sección Sobre mí. Puedes contar qué haces, qué buscas y cómo te gusta trabajar."
+          placeholderEs="Escribe un texto más personal para la sección Sobre mí."
+          placeholderEn="English version for the About section."
         />
         <p className="mt-1 text-xs text-gray-500">
-          Este texto reemplaza la frase corta en la sección Sobre mí del portfolio.
+          Escribe en español, genera inglés con Groq y ajusta si hace falta antes de guardar.
         </p>
       </div>
 
-      {/* Cita */}
-      <div>
-        <label className="block text-sm font-medium mb-1">Cita o frase</label>
-        <input
-          type="text"
-          name="quote"
-          value={profileData.quote}
-          onChange={handleChange}
-          className="border p-2 rounded w-full"
-          placeholder="Ej: 'Las grandes cosas nunca vienen de la zona de confort'"
-        />
-      </div>
+      <TranslatedField
+        label="Cita o frase"
+        nameEs="quote"
+        nameEn="quote_en"
+        valueEs={profileData.quote || ""}
+        valueEn={profileData.quote_en || ""}
+        onChange={handleChange}
+        placeholderEs="Ej: 'Las grandes cosas nunca vienen de la zona de confort'"
+        placeholderEn="Quote in English"
+      />
       
       <div>
         <label className="block text-sm font-medium mb-1">Autor de la cita</label>

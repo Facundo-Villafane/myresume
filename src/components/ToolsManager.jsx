@@ -1,5 +1,6 @@
 import React from "react";
 import DataManager from "./DataManager";
+import TranslatedField from "./TranslatedField";
 
 // Gestor de Herramientas simplificado
 const ToolsManager = () => {
@@ -98,17 +99,16 @@ const ToolsManager = () => {
       <div className="space-y-4">
         <h3 className="font-medium text-lg">Editar herramienta</h3>
         
-        <div>
-          <label className="block text-sm font-medium mb-1">Nombre:</label>
-          <input
-            type="text"
-            name="nombre"
-            value={data.nombre || ''}
-            onChange={onChange}
-            className="border p-2 rounded w-full"
-            required
-          />
-        </div>
+        <TranslatedField
+          label="Nombre"
+          nameEs="nombre"
+          nameEn="nombre_en"
+          valueEs={data.nombre || ""}
+          valueEn={data.nombre_en || ""}
+          onChange={onChange}
+          className="border p-2 rounded w-full"
+          required
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

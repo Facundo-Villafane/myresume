@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { db } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import TranslatedField from "./TranslatedField";
 
 // Lista de herramientas comunes con sus iconos
 const availableTools = [
@@ -84,6 +85,7 @@ const categories = [
 
 const ToolsForm = () => {
   const [name, setName] = useState("");
+  const [nameEn, setNameEn] = useState("");
   const [selectedTool, setSelectedTool] = useState(null);
   const [customIcon, setCustomIcon] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -91,6 +93,13 @@ const ToolsForm = () => {
   const [proficiency, setProficiency] = useState("intermediate"); // basic, intermediate, advanced, expert
   const [isLoading, setIsLoading] = useState(false);
   const [customCategory, setCustomCategory] = useState("hard"); // Por defecto, nueva herramienta es "hard"
+
+  const handleNameChange = (e) => {
+    const { name: fieldName, value } = e.target;
+    if (fieldName === "nombre") setName(value);
+    if (fieldName === "nombre_en") setNameEn(value);
+    setSelectedTool(null);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -106,6 +115,7 @@ const ToolsForm = () => {
       // Preparar datos para guardar
       const toolData = {
         nombre: selectedTool ? selectedTool.name : name,
+        nombre_en: selectedTool ? selectedTool.name : nameEn,
         icono: selectedTool ? selectedTool.icon : customIcon,
         categoria: selectedTool ? selectedTool.category : customCategory,
         nivel: proficiency,
@@ -116,6 +126,7 @@ const ToolsForm = () => {
       
       // Resetear el formulario
       setName("");
+      setNameEn("");
       setSelectedTool(null);
       setCustomIcon("");
       setProficiency("intermediate");
@@ -207,15 +218,16 @@ const ToolsForm = () => {
       {/* O herramienta personalizada */}
       <div className="border-t pt-3">
         <h3 className="text-sm font-medium mb-2">O agrega una herramienta personalizada:</h3>
-        <input
-          type="text"
-          placeholder="Nombre de la herramienta"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setSelectedTool(null);
-          }}
+        <TranslatedField
+          label="Nombre de la herramienta"
+          nameEs="nombre"
+          nameEn="nombre_en"
+          valueEs={name}
+          valueEn={nameEn}
+          onChange={handleNameChange}
           className="border p-2 rounded w-full"
+          placeholderEs="Nombre de la herramienta"
+          placeholderEn="Tool name in English"
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">

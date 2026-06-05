@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { db } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { extractDominantColorFromImage } from "../utils/imageColor";
+import TranslatedField from "./TranslatedField";
 
 // Lista de tecnologías disponibles (se puede expandir según necesidades)
 const availableTechnologies = [
@@ -58,9 +59,13 @@ const projectCategories = [
 
 const ProjectForm = () => {
   const [title, setTitle] = useState("");
+  const [titleEn, setTitleEn] = useState("");
   const [description, setDescription] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
   const [brief, setBrief] = useState("");
+  const [briefEn, setBriefEn] = useState("");
   const [solution, setSolution] = useState("");
+  const [solutionEn, setSolutionEn] = useState("");
   const [link, setLink] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [accentColor, setAccentColor] = useState("#00c979");
@@ -69,6 +74,22 @@ const ProjectForm = () => {
   const [linkType, setLinkType] = useState("");
   const [selectedTechnologies, setSelectedTechnologies] = useState([]);
   const colorInputValue = /^#[0-9a-f]{6}$/i.test(accentColor) ? accentColor : "#00c979";
+
+  const handleTranslatedChange = (e) => {
+    const { name, value } = e.target;
+    const setters = {
+      titulo: setTitle,
+      titulo_en: setTitleEn,
+      descripcion: setDescription,
+      descripcion_en: setDescriptionEn,
+      brief: setBrief,
+      brief_en: setBriefEn,
+      solucion: setSolution,
+      solucion_en: setSolutionEn,
+    };
+
+    setters[name]?.(value);
+  };
   
   // Detectar el tipo de enlace y generar una imagen de vista previa
   useEffect(() => {
@@ -144,9 +165,13 @@ const ProjectForm = () => {
     try {
       await addDoc(collection(db, "proyectos"), {
         titulo: title,
+        titulo_en: titleEn,
         descripcion: description,
+        descripcion_en: descriptionEn,
         brief,
+        brief_en: briefEn,
         solucion: solution,
+        solucion_en: solutionEn,
         enlace: link,
         imagenUrl: imageUrl,    // URL de la imagen
         accentColor,            // Color de énfasis visible en la card
@@ -157,9 +182,13 @@ const ProjectForm = () => {
       });
 
       setTitle("");
+      setTitleEn("");
       setDescription("");
+      setDescriptionEn("");
       setBrief("");
+      setBriefEn("");
       setSolution("");
+      setSolutionEn("");
       setLink("");
       setImageUrl("");
       setAccentColor("#00c979");
@@ -211,19 +240,29 @@ const ProjectForm = () => {
         <p className="text-sm text-slate-500">Todo lo que cargues acá aparece catalogado en la sección de proyectos.</p>
       </div>
       
-      <input
-        type="text"
-        placeholder="Título"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
+      <TranslatedField
+        label="Título"
+        nameEs="titulo"
+        nameEn="titulo_en"
+        valueEs={title}
+        valueEn={titleEn}
+        onChange={handleTranslatedChange}
+        placeholderEs="Título"
+        placeholderEn="Title"
         className="admin-input"
         required
       />
       
-      <textarea
-        placeholder="Descripción"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
+      <TranslatedField
+        label="Descripción"
+        nameEs="descripcion"
+        nameEn="descripcion_en"
+        valueEs={description}
+        valueEn={descriptionEn}
+        onChange={handleTranslatedChange}
+        multiline
+        placeholderEs="Descripción"
+        placeholderEn="Description"
         className="admin-input min-h-[110px]"
         required
       />
@@ -233,25 +272,31 @@ const ProjectForm = () => {
         <p className="mb-3 text-xs font-bold text-slate-500">
           Esto aparece en el front como si alguien pidiera algo y el proyecto respondiera con una solución.
         </p>
-        <div className="grid gap-3 md:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-sm font-black text-slate-700">Pedido / problema</label>
-            <textarea
-              placeholder="Ej: Necesito una app para encontrar equipo rápido."
-              value={brief}
-              onChange={(e) => setBrief(e.target.value)}
-              className="admin-input min-h-[96px]"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-black text-slate-700">Respuesta / solución</label>
-            <textarea
-              placeholder="Ej: Diseñé Tindev, con swipes y matches para formar equipos."
-              value={solution}
-              onChange={(e) => setSolution(e.target.value)}
-              className="admin-input min-h-[96px]"
-            />
-          </div>
+        <div className="grid gap-3">
+          <TranslatedField
+            label="Pedido / problema"
+            nameEs="brief"
+            nameEn="brief_en"
+            valueEs={brief}
+            valueEn={briefEn}
+            onChange={handleTranslatedChange}
+            multiline
+            placeholderEs="Ej: Necesito una app para encontrar equipo rápido."
+            placeholderEn="Example: I need an app to find a team quickly."
+            className="admin-input min-h-[96px]"
+          />
+          <TranslatedField
+            label="Respuesta / solución"
+            nameEs="solucion"
+            nameEn="solucion_en"
+            valueEs={solution}
+            valueEn={solutionEn}
+            onChange={handleTranslatedChange}
+            multiline
+            placeholderEs="Ej: Diseñé Tindev, con swipes y matches para formar equipos."
+            placeholderEn="Example: I designed Tindev with swipes and matches to build teams."
+            className="admin-input min-h-[96px]"
+          />
         </div>
       </div>
       

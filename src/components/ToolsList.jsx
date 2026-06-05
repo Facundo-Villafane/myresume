@@ -2,6 +2,7 @@ import { collection } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { db } from "../firebaseConfig";
 import React from "react";
+import { pickLocalized, translations } from "../i18n";
 
 const fallbackTools = [
   { id: "js1", nombre: "JAVASCRIPT", categoria: "language", nivel: "expert" },
@@ -23,6 +24,19 @@ const groupLabels = {
   skill: "MINDSET",
   soft: "MINDSET",
   other: "OTRAS",
+};
+
+const groupLabelsEn = {
+  development: "FRONTEND",
+  language: "LANGUAGES",
+  design: "DESIGN",
+  game: "GAMES",
+  productivity: "TOOLS",
+  hard: "TECH STACK",
+  methodology: "PROCESS",
+  skill: "MINDSET",
+  soft: "MINDSET",
+  other: "OTHER",
 };
 
 const categoryMap = {
@@ -79,20 +93,21 @@ const getLevelValue = (tool) => {
   return levelValueMap[normalize(rawLevel)] || 2;
 };
 
-const SkillBars = ({ value }) => (
-  <span className="skill-bars" aria-label={`Nivel ${value} de 4`}>
+const SkillBars = ({ value, language }) => (
+  <span className="skill-bars" aria-label={language === "en" ? `Level ${value} of 4` : `Nivel ${value} de 4`}>
     {[1, 2, 3, 4].map((bar) => (
       <span key={bar} className={bar <= value ? "is-filled" : ""} />
     ))}
   </span>
 );
 
-const ToolsList = () => {
+const ToolsList = ({ language = "es" }) => {
+  const t = translations[language];
   const q = collection(db, "herramientas");
   const [herramientas, loading, error] = useCollectionData(q, { idField: "id" });
 
-  if (loading) return <p className="text-current animate-pulse font-mono uppercase">Cargando habilidades...</p>;
-  if (error) return <p className="text-red-500 font-bold uppercase">Error: {error.message}</p>;
+  if (loading) return <p className="text-current animate-pulse font-mono uppercase">{t.status.loadingSkills}</p>;
+  if (error) return <p className="text-red-500 font-bold uppercase">{t.status.error}: {error.message}</p>;
 
   const baseData = herramientas && herramientas.length > 0 ? herramientas : fallbackTools;
   const groupedSkills = baseData.reduce((groups, tool) => {
@@ -100,14 +115,14 @@ const ToolsList = () => {
     if (!groups[groupId]) {
       groups[groupId] = {
         id: groupId,
-        label: groupLabels[groupId] || groupId.toUpperCase(),
+        label: (language === "en" ? groupLabelsEn[groupId] : groupLabels[groupId]) || groupId.toUpperCase(),
         items: [],
       };
     }
 
     groups[groupId].items.push({
       ...tool,
-      name: tool.nombre || tool.name || "Skill",
+      name: pickLocalized(tool, "nombre", language) || pickLocalized(tool, "name", language) || "Skill",
       level: getLevelValue(tool),
     });
 
@@ -128,7 +143,7 @@ const ToolsList = () => {
                   {index === group.items.length - 1 ? "└─" : "├─"}
                 </span>
                 <span className="skill-tree-name">{skill.name}</span>
-                <SkillBars value={skill.level} />
+                <SkillBars value={skill.level} language={language} />
               </div>
             ))}
           </div>

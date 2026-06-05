@@ -1,14 +1,17 @@
 import { collection, orderBy, query } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { db } from "../firebaseConfig";
-import React, { useEffect, useRef, useState } from "react";
-import { FaGamepad, FaGlobe, FaHammer, FaMobileAlt, FaPalette, FaExternalLinkAlt } from "react-icons/fa";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { FaArrowLeft, FaArrowRight, FaGamepad, FaGlobe, FaHammer, FaMobileAlt, FaPalette, FaExternalLinkAlt } from "react-icons/fa";
+import { pickLocalized, translations } from "../i18n";
 
 const projectCategories = [
   {
     id: "juegos",
     label: "Juegos",
+    label_en: "Games",
     hint: "Game jams, prototipos y experiencias interactivas.",
+    hint_en: "Game jams, prototypes, and interactive experiences.",
     color: "#00c979",
     icon: <FaGamepad aria-hidden="true" />,
     match: ["juego", "game", "itch", "unity", "godot", "unreal", "csharp", "c#"],
@@ -16,7 +19,9 @@ const projectCategories = [
   {
     id: "paginas-web",
     label: "Páginas web",
+    label_en: "Websites",
     hint: "Landing pages, portfolios, sitios y experiencias web.",
+    hint_en: "Landing pages, portfolios, sites, and web experiences.",
     color: "#1398ff",
     icon: <FaGlobe aria-hidden="true" />,
     match: ["web", "website", "landing", "portfolio", "react", "html", "css", "next"],
@@ -24,7 +29,9 @@ const projectCategories = [
   {
     id: "apps",
     label: "Apps",
+    label_en: "Apps",
     hint: "Productos, dashboards y aplicaciones con flujo propio.",
+    hint_en: "Products, dashboards, and apps with their own flow.",
     color: "#f164d8",
     icon: <FaMobileAlt aria-hidden="true" />,
     match: ["app", "mobile", "dashboard", "saas", "tindev"],
@@ -32,7 +39,9 @@ const projectCategories = [
   {
     id: "herramientas",
     label: "Herramientas",
+    label_en: "Tools",
     hint: "Utilidades, sistemas internos y recursos técnicos.",
+    hint_en: "Utilities, internal systems, and technical resources.",
     color: "#ff9f1a",
     icon: <FaHammer aria-hidden="true" />,
     match: ["tool", "herramienta", "utility", "cli", "admin", "manager"],
@@ -40,7 +49,9 @@ const projectCategories = [
   {
     id: "arte",
     label: "Arte",
+    label_en: "Art",
     hint: "Ilustración, visuales, pixel art y piezas gráficas.",
+    hint_en: "Illustration, visuals, pixel art, and graphic pieces.",
     color: "#ff5b57",
     icon: <FaPalette aria-hidden="true" />,
     match: ["arte", "art", "illustration", "ilustracion", "visual", "pixel", "photoshop"],
@@ -122,12 +133,16 @@ const normalize = (value) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
+const getCategoryLabel = (category, language) => pickLocalized(category, "label", language) || category.label;
+const getCategoryHint = (category, language) => pickLocalized(category, "hint", language) || category.hint;
+
 const getProjectCategory = (project) => {
   const explicit = normalize(project.categoria || project.category || project.tipoProyecto || project.tipo);
   const explicitMatch = projectCategories.find((category) => {
     const categoryId = normalize(category.id);
     const label = normalize(category.label);
-    return explicit === categoryId || explicit === label || explicit.includes(categoryId) || explicit.includes(label);
+    const labelEn = normalize(category.label_en);
+    return explicit === categoryId || explicit === label || explicit === labelEn || explicit.includes(categoryId) || explicit.includes(label) || explicit.includes(labelEn);
   });
 
   if (explicitMatch) return explicitMatch.id;
@@ -157,7 +172,7 @@ const getProjectCategory = (project) => {
   return scoredCategories[0]?.id || "herramientas";
 };
 
-const ProjectPlaceholder = ({ label, color }) => (
+const ProjectPlaceholder = ({ label, color, language = "es" }) => (
   <div className="absolute inset-0 flex items-center justify-center overflow-hidden" style={{ backgroundColor: color }}>
     <svg viewBox="0 0 420 300" className="h-full w-full" role="img" aria-label={`Placeholder de imagen para ${label}`}>
       <rect width="420" height="300" fill={color} />
@@ -169,7 +184,7 @@ const ProjectPlaceholder = ({ label, color }) => (
         PLACEHOLDER
       </text>
       <text x="50%" y="64%" dominantBaseline="middle" textAnchor="middle" fill="#131313" fontFamily="Arial, sans-serif" fontSize="13" fontWeight="900">
-        IMAGEN / ILUSTRACIÓN / PREVIEW
+        {language === "es" ? "IMAGEN / ILUSTRACIÓN / PREVIEW" : "IMAGE / ILLUSTRATION / PREVIEW"}
       </text>
     </svg>
   </div>
@@ -178,14 +193,28 @@ const ProjectPlaceholder = ({ label, color }) => (
 const ProjectStrip = ({ children, color }) => {
   const stripRef = useRef(null);
   const trackRef = useRef(null);
+  const [activeVirtualIndex, setActiveVirtualIndex] = useState(0);
+  const [trackOffset, setTrackOffset] = useState(0);
+  const [snapWithoutTransition, setSnapWithoutTransition] = useState(false);
+  const [autoPlayResetKey, setAutoPlayResetKey] = useState(0);
   const items = React.Children.toArray(children);
   const [minLoopItems, setMinLoopItems] = useState(() => (window.innerWidth >= 768 ? 3 : 2));
   const loopEnabled = items.length >= minLoopItems;
+  const normalizedActiveIndex = items.length ? ((activeVirtualIndex % items.length) + items.length) % items.length : 0;
   const renderedItems = loopEnabled
-    ? [0, 1].flatMap((repeat) =>
+    ? [0, 1, 2].flatMap((repeat) =>
         items.map((item, index) => (
-          <div key={`${repeat}-${item.key || index}`} className="contents" aria-hidden={repeat === 1}>
-            {item}
+          <div
+            key={`${repeat}-${item.key || index}`}
+            className="project-strip-item"
+            data-project-global-index={repeat * items.length + index}
+            data-project-index={index}
+            data-project-repeat={repeat}
+            aria-hidden={repeat !== 1}
+          >
+            {React.cloneElement(item, {
+              isActive: repeat * items.length + index === activeVirtualIndex,
+            })}
             {index === items.length - 1 && (
               <div className="project-loop-separator" aria-hidden="true">
                 <span />
@@ -210,100 +239,64 @@ const ProjectStrip = ({ children, color }) => {
   }, []);
 
   useEffect(() => {
+    if (!items.length) return;
+    setActiveVirtualIndex(items.length);
+  }, [items.length]);
+
+  useLayoutEffect(() => {
     const strip = stripRef.current;
     const track = trackRef.current;
-    if (!strip || !track) return undefined;
-    const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
-    let isDragging = false;
-    let lastPointerX = 0;
-    let releaseTimer;
+    if (!strip || !track || !items.length) return;
 
-    const setCenteredCard = () => {
-      const cards = [...strip.querySelectorAll(".project-card")];
-      if (!cards.length) return;
+    const activeItem = track.querySelector(`[data-project-global-index="${activeVirtualIndex}"]`);
+    if (!activeItem) return;
 
-      const stripRect = strip.getBoundingClientRect();
-      const stripCenter = stripRect.left + stripRect.width / 2;
-      const centeredCard = cards.reduce((closest, card) => {
-        const rect = card.getBoundingClientRect();
-        const distance = Math.abs(rect.left + rect.width / 2 - stripCenter);
-        return !closest || distance < closest.distance ? { card, distance } : closest;
-      }, null)?.card;
+    const activeCard = activeItem.querySelector(".project-card");
+    if (!activeCard) return;
 
-      cards.forEach((card) => card.classList.toggle("is-center", card === centeredCard));
-    };
+    const stripStyles = window.getComputedStyle(strip);
+    const paddingLeft = parseFloat(stripStyles.paddingLeft) || 0;
+    const nextOffset = strip.clientWidth / 2 - paddingLeft - activeCard.offsetLeft - activeCard.offsetWidth / 2;
 
-    const applyDirectedSpeed = (moveAmount) => {
-      if (!loopEnabled) return;
+    setTrackOffset(nextOffset);
+  }, [activeVirtualIndex, items.length, loopEnabled]);
 
-      const intensity = Math.min(1, Math.abs(moveAmount) / 160);
-      const easedIntensity = intensity * intensity;
+  useEffect(() => {
+    if (!loopEnabled || activeVirtualIndex >= items.length && activeVirtualIndex < items.length * 2) return undefined;
 
-      track.classList.toggle("is-reverse", moveAmount > 0);
-      track.style.setProperty("--carousel-duration", `${Math.max(46, 62 - easedIntensity * 10)}s`);
-    };
+    const timeoutId = window.setTimeout(() => {
+      const normalizedVirtualIndex = items.length + normalizedActiveIndex;
+      setSnapWithoutTransition(true);
+      setActiveVirtualIndex(normalizedVirtualIndex);
 
-    const setPointerDirection = (event) => {
-      if (!loopEnabled || coarsePointerQuery.matches) return;
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setSnapWithoutTransition(false));
+      });
+    }, 820);
 
-      const rect = strip.getBoundingClientRect();
-      const center = rect.left + rect.width / 2;
-      const distanceFromCenter = (event.clientX - center) / (rect.width / 2);
+    return () => window.clearTimeout(timeoutId);
+  }, [activeVirtualIndex, items.length, loopEnabled, normalizedActiveIndex]);
 
-      applyDirectedSpeed(distanceFromCenter < -0.08 ? 160 : -160 * Math.min(1, Math.abs(distanceFromCenter)));
-    };
+  useEffect(() => {
+    if (!loopEnabled) return undefined;
 
-    const resetDirection = () => {
-      track.classList.remove("is-reverse");
-      track.style.removeProperty("--carousel-duration");
-    };
+    const intervalId = window.setInterval(() => {
+      setActiveVirtualIndex((current) => current + 1);
+    }, 4800);
 
-    const startSwipe = (event) => {
-      if (!loopEnabled || !coarsePointerQuery.matches) return;
+    return () => window.clearInterval(intervalId);
+  }, [autoPlayResetKey, items.length, loopEnabled]);
 
-      window.clearTimeout(releaseTimer);
-      isDragging = true;
-      lastPointerX = event.clientX;
-    };
-
-    const moveSwipe = (event) => {
-      if (!isDragging || !coarsePointerQuery.matches) return;
-
-      const deltaX = event.clientX - lastPointerX;
-      if (Math.abs(deltaX) > 2) {
-        applyDirectedSpeed(deltaX);
+  const moveCarousel = (nextDirection) => {
+    setAutoPlayResetKey((current) => current + 1);
+    setActiveVirtualIndex((current) => {
+      if (nextDirection === "reverse") {
+        return current - 1;
       }
-      lastPointerX = event.clientX;
-    };
 
-    const endSwipe = () => {
-      if (!coarsePointerQuery.matches) return;
-
-      isDragging = false;
-      window.clearTimeout(releaseTimer);
-      releaseTimer = window.setTimeout(resetDirection, 1400);
-    };
-
-    const intervalId = window.setInterval(setCenteredCard, 120);
-    strip.addEventListener("pointermove", setPointerDirection);
-    strip.addEventListener("pointerleave", resetDirection);
-    strip.addEventListener("pointerdown", startSwipe);
-    strip.addEventListener("pointermove", moveSwipe);
-    window.addEventListener("pointerup", endSwipe);
-    window.addEventListener("pointercancel", endSwipe);
-    setCenteredCard();
-
-    return () => {
-      strip.removeEventListener("pointermove", setPointerDirection);
-      strip.removeEventListener("pointerleave", resetDirection);
-      strip.removeEventListener("pointerdown", startSwipe);
-      strip.removeEventListener("pointermove", moveSwipe);
-      window.removeEventListener("pointerup", endSwipe);
-      window.removeEventListener("pointercancel", endSwipe);
-      window.clearTimeout(releaseTimer);
-      window.clearInterval(intervalId);
-    };
-  }, [loopEnabled]);
+      return current + 1;
+    });
+  };
 
   return (
     <div
@@ -313,22 +306,56 @@ const ProjectStrip = ({ children, color }) => {
         "--strip-accent": color,
       }}
     >
-      <div ref={trackRef} className={`project-strip-track ${loopEnabled ? "is-looping" : "is-static"}`}>{renderedItems}</div>
+      {loopEnabled && (
+        <div className="project-carousel-controls" aria-label="Controles del carrusel">
+          <button
+            type="button"
+            className="project-carousel-button"
+            onClick={() => moveCarousel("reverse")}
+            aria-label="Ver proyectos anteriores"
+          >
+            <FaArrowLeft aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="project-carousel-button"
+            onClick={() => moveCarousel("forward")}
+            aria-label="Ver proyectos siguientes"
+          >
+            <FaArrowRight aria-hidden="true" />
+          </button>
+        </div>
+      )}
+      <div
+        ref={trackRef}
+        className={`project-strip-track ${loopEnabled ? "is-centered-loop" : "is-static"} ${snapWithoutTransition ? "is-snapping" : ""}`}
+        style={{
+          transform: loopEnabled ? `translate3d(${trackOffset}px, 0, 0)` : undefined,
+        }}
+      >
+        {renderedItems}
+      </div>
     </div>
   );
 };
 
-const ProjectCard = ({ project, category, index }) => {
-  const title = project.titulo || project.nombre || "Proyecto sin título";
+const ProjectCard = ({ project, category, index, isActive = false, language = "es" }) => {
+  const t = translations[language];
+  const title = pickLocalized(project, "titulo", language) || pickLocalized(project, "nombre", language) || t.projects.untitled;
   const imageUrl = project.imagenUrl || project.imageUrl || project.imagen || "";
   const technologies = Array.isArray(project.tecnologias) ? project.tecnologias : [];
   const href = project.enlace || project.url || "#";
   const accentColor = project.accentColor || project.colorAcento || project.color || category.color;
-  const requestText = project.brief || project.pedido || `¿Podés resolver algo como "${title}"?`;
-  const solutionText = project.solucion || project.solution || project.respuesta || project.descripcion;
+  const categoryLabel = getCategoryLabel(category, language);
+  const requestText = pickLocalized(project, "brief", language) || pickLocalized(project, "pedido", language) || t.projects.requestFallback(title);
+  const solutionText =
+    pickLocalized(project, "solucion", language) ||
+    pickLocalized(project, "solution", language) ||
+    pickLocalized(project, "respuesta", language) ||
+    pickLocalized(project, "descripcion", language);
 
   return (
-    <article className="project-card group flex-shrink-0 w-[min(86vw,360px)] md:w-[430px] rounded-[30px] bg-[#fdfbfb] p-3 text-[#131313]" style={{ "--card-accent": accentColor }}>
+    <article className={`project-card group flex-shrink-0 w-[min(86vw,360px)] md:w-[430px] rounded-[30px] bg-[#fdfbfb] p-3 text-[#131313] ${isActive ? "is-center" : ""}`} style={{ "--card-accent": accentColor }}>
       <div className="project-card-media relative aspect-[4/3] overflow-hidden rounded-[24px] bg-[#242424]">
         {imageUrl ? (
           <img
@@ -337,11 +364,11 @@ const ProjectCard = ({ project, category, index }) => {
             className="h-full w-full object-cover grayscale contrast-[1.08] transition-all duration-500 group-hover:grayscale-0"
           />
         ) : (
-          <ProjectPlaceholder label={title} color={accentColor} />
+          <ProjectPlaceholder label={title} color={accentColor} language={language} />
         )}
         <span className="project-card-tag sticker-pill absolute left-3 top-3 bg-[#fdfbfb] text-[10px] shadow-[0_4px_0_rgba(0,0,0,0.22)]" style={{ "--sticker-bg": "#fdfbfb", "--sticker-hover-fg": "#131313" }}>
           {category.icon}
-          {category.label}
+          {categoryLabel}
         </span>
       </div>
 
@@ -378,7 +405,7 @@ const ProjectCard = ({ project, category, index }) => {
             className="project-card-cta sticker-pill sticker-arrow w-full justify-center py-3 text-xs"
             style={{ backgroundColor: accentColor, "--sticker-bg": accentColor }}
           >
-            Abrir {index + 1}
+            {t.projects.open} {index + 1}
             <FaExternalLinkAlt className="text-[10px]" aria-hidden="true" />
           </a>
         </div>
@@ -387,26 +414,32 @@ const ProjectCard = ({ project, category, index }) => {
   );
 };
 
-const EmptyCategoryCard = ({ category }) => (
+const EmptyCategoryCard = ({ category, language = "es" }) => {
+  const t = translations[language];
+  const categoryLabel = getCategoryLabel(category, language);
+
+  return (
   <div className="flex-shrink-0 w-[min(86vw,360px)] md:w-[430px] rounded-[30px] border border-[#fdfbfb]/15 bg-[#1f1f1f] p-3">
     <div className="relative aspect-[4/3] overflow-hidden rounded-[24px]">
-      <ProjectPlaceholder label={category.label} color={category.color} />
+      <ProjectPlaceholder label={categoryLabel} color={category.color} language={language} />
     </div>
     <div className="p-5">
-      <h3 className="font-extended text-2xl uppercase leading-none text-[#fdfbfb]">Espacio para {category.label}</h3>
+      <h3 className="font-extended text-2xl uppercase leading-none text-[#fdfbfb]">{t.projects.placeholderTitle} {categoryLabel}</h3>
       <p className="mt-3 text-sm font-bold leading-snug text-[#fdfbfb]/60">
-        Placeholder listo para cuando agregues contenido real de esta categoría.
+        {t.projects.placeholderText}
       </p>
     </div>
   </div>
-);
+  );
+};
 
-const ProjectsList = () => {
+const ProjectsList = ({ language = "es" }) => {
+  const t = translations[language];
   const q = query(collection(db, "proyectos"), orderBy("createdAt", "desc"));
   const [proyectos, loading, error] = useCollectionData(q, { idField: "id" });
 
-  if (loading) return <p className="text-neo-panel animate-pulse font-mono uppercase">Cargando...</p>;
-  if (error) return <p className="text-red-500 font-bold uppercase">Error: {error.message}</p>;
+  if (loading) return <p className="text-neo-panel animate-pulse font-mono uppercase">{t.status.loading}</p>;
+  if (error) return <p className="text-red-500 font-bold uppercase">{t.status.error}: {error.message}</p>;
 
   const projectsData = proyectos && proyectos.length > 0 ? proyectos : mockProjects;
   const groupedProjects = projectCategories.map((category) => ({
@@ -422,18 +455,18 @@ const ProjectsList = () => {
             <div>
               <span className="sticker-pill mb-3 text-xs" style={{ backgroundColor: category.color, "--sticker-bg": category.color }}>
                 {category.icon}
-                {category.label}
+                {getCategoryLabel(category, language)}
               </span>
-              <h3 className="font-extended text-3xl leading-none text-[#fdfbfb] sm:text-5xl">{category.label}</h3>
+              <h3 className="font-extended text-3xl leading-none text-[#fdfbfb] sm:text-5xl">{getCategoryLabel(category, language)}</h3>
             </div>
-            <p className="max-w-sm text-sm font-black uppercase text-[#fdfbfb]/50">{category.hint}</p>
+            <p className="max-w-sm text-sm font-black uppercase text-[#fdfbfb]/50">{getCategoryHint(category, language)}</p>
           </div>
 
           <ProjectStrip color={category.color}>
             {category.projects.length > 0 ? (
-              category.projects.map((project, index) => <ProjectCard key={project.id || `${category.id}-${index}`} project={project} category={category} index={index} />)
+              category.projects.map((project, index) => <ProjectCard key={project.id || `${category.id}-${index}`} project={project} category={category} index={index} language={language} />)
             ) : (
-              <EmptyCategoryCard category={category} />
+              <EmptyCategoryCard category={category} language={language} />
             )}
           </ProjectStrip>
         </section>

@@ -1,6 +1,7 @@
 import React from "react";
 import DataManager from "./DataManager";
 import { extractDominantColorFromImage } from "../utils/imageColor";
+import TranslatedField from "./TranslatedField";
 
 // Gestor de Proyectos
 const ProjectManager = () => {
@@ -187,17 +188,16 @@ const ProjectManager = () => {
       <div className="space-y-4 max-h-[80vh] overflow-y-auto">
         <h3 className="font-medium text-lg">Editar proyecto</h3>
         
-        <div>
-          <label className="block text-sm font-medium mb-1">Título:</label>
-          <input
-            type="text"
-            name="titulo"
-            value={data.titulo || ''}
-            onChange={onChange}
-            className="border p-2 rounded w-full"
-            required
-          />
-        </div>
+        <TranslatedField
+          label="Título"
+          nameEs="titulo"
+          nameEn="titulo_en"
+          valueEs={data.titulo || ""}
+          valueEn={data.titulo_en || ""}
+          onChange={onChange}
+          className="border p-2 rounded w-full"
+          required
+        />
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
           <label className="block text-sm font-black mb-2">Color de énfasis de la card:</label>
@@ -231,16 +231,18 @@ const ProjectManager = () => {
           </p>
         </div>
         
-        <div>
-          <label className="block text-sm font-medium mb-1">Descripción:</label>
-          <textarea
-            name="descripcion"
-            value={data.descripcion || ''}
-            onChange={onChange}
-            className="border p-2 rounded w-full min-h-[100px]"
-            placeholder="Descripción del proyecto"
-          />
-        </div>
+        <TranslatedField
+          label="Descripción"
+          nameEs="descripcion"
+          nameEn="descripcion_en"
+          valueEs={data.descripcion || ""}
+          valueEn={data.descripcion_en || ""}
+          onChange={onChange}
+          multiline
+          className="border p-2 rounded w-full min-h-[100px]"
+          placeholderEs="Descripción del proyecto"
+          placeholderEn="Project description"
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -272,27 +274,31 @@ const ProjectManager = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Pedido / problema:</label>
-            <textarea
-              name="brief"
-              value={data.brief || ''}
-              onChange={onChange}
-              className="border p-2 rounded w-full min-h-[90px]"
-              placeholder="Ej: Necesito mostrar mis juegos de forma más clara."
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Respuesta / solución:</label>
-            <textarea
-              name="solucion"
-              value={data.solucion || ''}
-              onChange={onChange}
-              className="border p-2 rounded w-full min-h-[90px]"
-              placeholder="Ej: Armé una experiencia con categorías, previews y CTA."
-            />
-          </div>
+        <div className="grid gap-4">
+          <TranslatedField
+            label="Pedido / problema"
+            nameEs="brief"
+            nameEn="brief_en"
+            valueEs={data.brief || ""}
+            valueEn={data.brief_en || ""}
+            onChange={onChange}
+            multiline
+            className="border p-2 rounded w-full min-h-[90px]"
+            placeholderEs="Ej: Necesito mostrar mis juegos de forma más clara."
+            placeholderEn="Example: I need to show my games more clearly."
+          />
+          <TranslatedField
+            label="Respuesta / solución"
+            nameEs="solucion"
+            nameEn="solucion_en"
+            valueEs={data.solucion || ""}
+            valueEn={data.solucion_en || ""}
+            onChange={onChange}
+            multiline
+            className="border p-2 rounded w-full min-h-[90px]"
+            placeholderEs="Ej: Armé una experiencia con categorías, previews y CTA."
+            placeholderEn="Example: I built an experience with categories, previews, and CTAs."
+          />
         </div>
 
         <div>
